@@ -4,4 +4,22 @@ theme: minima
 
 # Build settings
 markdown: kramdown
-permalink: /blog/:year/:month/:day/:title 
+permalink: /blog/:year/:month/:day/:title
+
+# Base URL settings
+baseurl: ""
+url: ""
+
+# Collections
+collections:
+  posts:
+    output: true
+    permalink: /blog/:year/:month/:day/:title
+
+# Default layouts
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
