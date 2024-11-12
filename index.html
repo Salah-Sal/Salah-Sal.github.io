@@ -3,109 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Name - Personal Website</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        header {
-            background-color: #f4f4f4;
-            padding: 2rem 0;
-            text-align: center;
-        }
-        
-        .profile-img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            margin-bottom: 1rem;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            margin: 0;
-        }
-        
-        .subtitle {
-            color: #7f8c8d;
-            margin-top: 0.5rem;
-        }
-        
-        section {
-            margin: 2rem 0;
-        }
-        
-        h2 {
-            color: #2c3e50;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 0.5rem;
-        }
-        
-        .social-links {
-            margin-top: 2rem;
-        }
-        
-        .social-links a {
-            color: #3498db;
-            text-decoration: none;
-            margin: 0 1rem;
-        }
-        
-        .social-links a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <title>Your Name - Professional Blog</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <header>
-        <img src="/api/placeholder/150/150" alt="Your Profile Picture" class="profile-img">
-        <h1>Your Name</h1>
-        <p class="subtitle">Your Title or Tagline</p>
+        <nav>
+            <h1>Your Name</h1>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/blog">Blog</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <div class="container">
-        <section>
-            <h2>About Me</h2>
-            <p>Hello! I'm a [your profession/background]. I'm passionate about [your interests/specialties].</p>
+    <main>
+        <section class="hero">
+            <h2>Welcome to My Professional Blog</h2>
+            <p>Share your expertise and thoughts here</p>
         </section>
 
-        <section>
-            <h2>Projects</h2>
-            <ul>
-                <li><strong>Project 1</strong> - Description of your first project</li>
-                <li><strong>Project 2</strong> - Description of your second project</li>
-                <li><strong>Project 3</strong> - Description of your third project</li>
-            </ul>
+        <section class="recent-posts">
+            <h3>Recent Posts</h3>
+            <!-- Blog posts will be automatically listed here -->
         </section>
+    </main>
 
-        <section>
-            <h2>Skills</h2>
-            <ul>
-                <li>Skill 1</li>
-                <li>Skill 2</li>
-                <li>Skill 3</li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>Contact</h2>
-            <div class="social-links">
-                <a href="https://github.com/yourusername">GitHub</a>
-                <a href="https://linkedin.com/in/yourprofile">LinkedIn</a>
-                <a href="mailto:your.email@example.com">Email</a>
-            </div>
-        </section>
-    </div>
+    <footer>
+        <p>&copy; 2024 Your Name. All rights reserved.</p>
+    </footer>
 </body>
 </html>

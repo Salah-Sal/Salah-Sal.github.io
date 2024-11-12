@@ -1,0 +1,7 @@
+title: Your Professional Blog
+description: A place where I share my thoughts and expertise
+theme: minima
+
+# Build settings
+markdown: kramdown
+permalink: /blog/:year/:month/:day/:title 
