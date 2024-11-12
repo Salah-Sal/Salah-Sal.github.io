@@ -4,11 +4,10 @@ theme: minima
 
 # Build settings
 markdown: kramdown
-permalink: /blog/:year/:month/:day/:title
 
-# Base URL settings
+# URL settings
 baseurl: ""
-url: ""
+url: "https://your-username.github.io"
 
 # Collections
 collections:
@@ -23,3 +22,11 @@ defaults:
       type: "posts"
     values:
       layout: "post"
+  - scope:
+      path: "blog"
+    values:
+      layout: "default"
+  - scope:
+      path: "about"
+    values:
+      layout: "default"
