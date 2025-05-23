@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="{{ site.active_lang | default: site.default_lang | default: 'en' }}" dir="{{ site.data.locales[site.active_lang].direction | default: 'ltr' }}">
+<head>
+    {%- include head_common.html -%}
+</head>
+<body>
+    {%- include header_nav.html -%}
+    <main>
+        {{ content }}
+    </main>
+    {%- include footer_content.html -%}
+</body>
+</html>

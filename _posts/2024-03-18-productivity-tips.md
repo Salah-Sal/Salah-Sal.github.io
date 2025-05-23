@@ -3,6 +3,7 @@ layout: post
 title: "5 Productivity Tips for Developers"
 date: 2024-03-18
 categories: [productivity, career]
+lang: en
 ---
 
 As developers, we're always looking for ways to improve our productivity. Here are my top 5 tips:

@@ -1,0 +1,41 @@
+---
+layout: default
+---
+<div class="container page-section"> {# Using classes from Suggestion 3 in Task 5.5 #}
+  <header class="archive-header">
+    {# Attempt to get localized "Category:" prefix, fallback to English #}
+    {% assign category_prefix = site.data.locales[site.active_lang].category_archive_prefix | default: "Category" %}
+    <h1 class="archive-title">{{ category_prefix }}: {{ page.category_name }}</h1>
+  </header>
+
+  <div class="post-list">
+    {% assign category_posts = site.categories[page.category_name] | default: empty_array %}
+    {% assign posts_in_lang = "" | split: "" %} {# Initialize as empty array #}
+
+    {% for post_item in category_posts %}
+      {% if post_item.lang == site.active_lang %}
+        {% assign posts_in_lang = posts_in_lang | push: post_item %}
+      {% endif %}
+    {% endfor %}
+
+    {% if posts_in_lang.size > 0 %}
+      {% for post_item in posts_in_lang %}
+        <article class="post-preview">
+          <h3><a href="{{ post_item.url | relative_url }}">{{ post_item.title | escape }}</a></h3>
+          <p class="post-meta">
+            <span class="post-date">{{ post_item.date | date_to_string }}</span>
+            {# Optionally display categories again, though redundant on a category page #}
+          </p>
+          {% if post_item.excerpt %}
+            <div class="post-excerpt">
+              {{ post_item.excerpt }}
+            </div>
+          {% endif %}
+          <p class="read-more-link"><a href="{{ post_item.url | relative_url }}">{{ site.data.locales[site.active_lang].read_more }}</a></p>
+        </article>
+      {% endfor %}
+    {% else %}
+      <p>No posts found in this category for the current language.</p> {# Consider localizing this later #}
+    {% endif %}
+  </div>
+</div>

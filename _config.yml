@@ -6,8 +6,24 @@ theme: minima
 markdown: kramdown
 
 # URL settings
-baseurl: ""
-url: "https://your-username.github.io"
+baseurl: "" # Important for correct pathing with jekyll-polyglot relative_url
+url: "https://Salah-Sal.github.io"
+
+# Plugins
+plugins:
+  - jekyll-feed
+  - jekyll-polyglot
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-paginate-v2
+
+# Jekyll Polyglot Configuration
+languages: ["en", "ar"]
+default_lang: "en"
+exclude_from_localization:
+  - "assets/"
+  - "css/"
+parallel_localization: true
 
 # Collections
 collections:
@@ -30,3 +46,38 @@ defaults:
       path: "about"
     values:
       layout: "default"
+
+# Giscus Comments Configuration
+giscus:
+  repo: "Salah-Sal/Salah-Sal.github.io"
+  repo_id: "R_kgDONN7Cmw"
+  category: "General"
+  category_id: "DIC_kwDONN7Cm84Cqekk"
+  mapping: "pathname" # e.g., "pathname", "url", "title", "og:title"
+  strict: "0" # Or 0
+  reactions_enabled: "1" # Or 1
+  emit_metadata: "0" # Or 0
+  input_position: "bottom" # "top" or "bottom"
+  theme: "gruvbox_dark" # e.g., "light", "dark", "preferred_color_scheme", "transparent_dark", "gruvbox_dark"
+  # lang will be handled dynamically in the script include
+
+# Pagination Settings (jekyll-paginate-v2)
+pagination:
+  enabled: true
+  per_page: 5 # Number of posts per page
+  permalink: '/page/:num/' # For the default language (English) blog listing
+  # The collection 'posts' will be paginated.
+  # Polyglot specific settings for collections:
+  # We need to tell Polyglot to handle the main posts collection.
+  # This is usually done by ensuring posts have 'lang' frontmatter,
+  # which we did in Sprint 3. Polyglot then creates language-specific versions.
+  # For jekyll-paginate-v2 with Polyglot, the paths for non-default languages
+  # are typically handled by Polyglot's URL rewriting.
+  # We will paginate the main blog page (blog/index.html).
+  # jekyll-paginate-v2 should pick up the posts for the current language
+  # if Polyglot correctly filters site.posts before pagination runs for a given page.
+
+  # We'll keep it simple first and see if Polyglot handles it.
+  # If not, more specific collection pagination config might be needed.
+  # Title for paginated pages (optional, for SEO):
+  title_suffix: ' - page :num'
