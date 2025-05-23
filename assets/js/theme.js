@@ -25,12 +25,7 @@
 
         // Giscus uses 'light' or 'dark' or a specific theme name like 'gruvbox_dark'
         // Choose your desired Giscus light/dark themes here
-        const giscusTheme = theme === 'dark' ? '{{ site.giscus.theme | default: "noborder_dark" }}' : 'light'; // Use your configured dark theme or a default dark one
-                                                                                                        // and 'light' or another light theme for light mode.
-                                                                                                        // {{ site.giscus.theme }} is already "gruvbox_dark" from your config
-                                                                                                        // So, if you want it to be light for light mode:
-        // const giscusTheme = theme === 'dark' ? '{{ site.giscus.theme }}' : 'light';
-
+        const giscusTheme = theme === 'dark' ? 'gruvbox_dark' : 'light';
 
         // More robust: use preferred_color_scheme for Giscus and let it adapt,
         // or if you specified a dark theme for giscus in _config.yml, it will stay dark.
@@ -42,7 +37,6 @@
         };
         iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
     }
-
 
     if (themeToggle) {
         themeToggle.addEventListener('click', () => {
