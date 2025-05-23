@@ -11,7 +11,7 @@ lang: en
 <section class="recent-posts">
     <h3>{{ site.data.locales[site.active_lang].recent_posts }}</h3>
     <!-- Blog posts will be automatically listed here by Jekyll -->
-    {% for post in site.posts limit:3 %}
+    {% for post in site.posts_by_language[site.active_lang] limit:3 %}
       <article class="post-preview">
         <h4><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h4>
         <p class="post-meta">
