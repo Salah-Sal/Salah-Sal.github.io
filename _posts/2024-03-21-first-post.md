@@ -3,6 +3,7 @@ layout: post
 title: "My First Blog Post"
 date: 2024-03-21
 categories: blog
+lang: en
 ---
 
 Welcome to my first blog post! Here you can start writing your content using Markdown.

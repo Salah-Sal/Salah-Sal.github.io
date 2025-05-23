@@ -1,37 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Name - Professional Blog</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <header>
-        <nav>
-            <h1>Your Name</h1>
-            <ul>
-                <li><a href="/">Home</a></li>
-                <li><a href="/blog">Blog</a></li>
-                <li><a href="/about">About</a></li>
-            </ul>
-        </nav>
-    </header>
+---
+layout: default
+title: Home
+lang: en
+---
+<section class="hero">
+    <h2>{{ site.data.locales[site.active_lang].hero_title }}</h2>
+    <p>{{ site.data.locales[site.active_lang].hero_subtitle }}</p>
+</section>
 
-    <main>
-        <section class="hero">
-            <h2>Welcome to My Professional Blog</h2>
-            <p>Share your expertise and thoughts here</p>
-        </section>
-
-        <section class="recent-posts">
-            <h3>Recent Posts</h3>
-            <!-- Blog posts will be automatically listed here -->
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 Your Name. All rights reserved.</p>
-    </footer>
-</body>
-</html>
+<section class="recent-posts">
+    <h3>{{ site.data.locales[site.active_lang].recent_posts }}</h3>
+    <!-- Blog posts will be automatically listed here by Jekyll -->
+    {% for post in site.posts limit:3 %}
+      <article class="post-preview">
+        <h4><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h4>
+        <p class="post-meta">
+          <span class="post-date">{{ post.date | date_to_string }}</span>
+          {% if post.categories.size > 0 %}
+            <span class="post-categories">
+              Categories: {{ post.categories | join: ', ' }}
+            </span>
+          {% endif %}
+        </p>
+        <div class="post-excerpt">{{ post.excerpt }}</div>
+        <p class="read-more-link"><a href="{{ post.url | relative_url }}">{{ site.data.locales[site.active_lang].read_more }}</a></p>
+      </article>
+    {% endfor %}
+</section>

@@ -1,0 +1,19 @@
+<header>
+    <nav>
+        <h1><a href="{{ '/' | localize_url | relative_url }}">{{ site.data.locales[site.active_lang].site_title | default: site.title }}</a></h1>
+        <ul>
+            <li><a href="{{ '/' | localize_url | relative_url }}">{{ site.data.locales[site.active_lang].nav_home }}</a></li>
+            <li><a href="{{ '/blog/' | localize_url | relative_url }}">{{ site.data.locales[site.active_lang].nav_blog }}</a></li>
+            <li><a href="{{ '/about/' | localize_url | relative_url }}">{{ site.data.locales[site.active_lang].nav_about }}</a></li>
+        </ul>
+        <ul class="language-switcher">
+          {% for lang_code in site.languages %}
+            <li>
+              <a href="{{ lang_code | localize_url | relative_url }}" {% if lang_code == site.active_lang %}class="active"{% endif %}>
+                {{ site.data.locales[lang_code].language_name | default: lang_code }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+    </nav>
+</header>

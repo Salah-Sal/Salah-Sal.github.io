@@ -1,0 +1,19 @@
+# _data/locales/en.yml
+language_name: "English" # For language switcher
+site_title: "Your Professional Blog" # Current value from _config.yml
+site_description: "A place where I share my thoughts and expertise" # Current value from _config.yml
+direction: "ltr"
+nav_home: "Home"
+nav_blog: "Blog"
+nav_about: "About"
+recent_posts: "Recent Posts"
+all_posts: "All Posts" # Added for blog/index.html title
+read_more: "Read more..."
+# %s will be replaced by the year, e.g., Copyright © 2024 Your Name...
+footer_copyright: "&copy; %s Your Professional Blog. All rights reserved."
+hero_title: "Welcome to My Professional Blog"
+hero_subtitle: "Share your expertise and thoughts here"
+not_found_title: "Page Not Found"
+not_found_message: "Sorry, the page you were looking for could not be found."
+not_found_gohome: "Go to Homepage"
+category_archive_prefix: "Category"
