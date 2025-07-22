@@ -18,7 +18,7 @@ lang: en
           <span class="post-date">{{ post.date | date_to_string }}</span>
           {% if post.categories.size > 0 %}
             <span class="post-categories">
-              Categories: {{ post.categories | join: ', ' }}
+              {{ site.data.locales[site.active_lang].categories_label }} {{ post.categories | join: ', ' }}
             </span>
           {% endif %}
         </p>
