@@ -63,26 +63,6 @@ giscus:
   theme: "preferred_color_scheme" # This will automatically adapt to the user's system theme
   # lang will be handled dynamically in the script include
 
-# Pagination Settings (jekyll-paginate-v2)
-pagination:
-  enabled: true
-  per_page: 5 # Number of posts per page
-  permalink: '/page/:num/' # For the default language (English) blog listing
-  # The collection 'posts' will be paginated.
-  # Polyglot specific settings for collections:
-  # We need to tell Polyglot to handle the main posts collection.
-  # This is usually done by ensuring posts have 'lang' frontmatter,
-  # which we did in Sprint 3. Polyglot then creates language-specific versions.
-  # For jekyll-paginate-v2 with Polyglot, the paths for non-default languages
-  # are typically handled by Polyglot's URL rewriting.
-  # We will paginate the main blog page (blog/index.html).
-  # jekyll-paginate-v2 should pick up the posts for the current language
-  # if Polyglot correctly filters site.posts before pagination runs for a given page.
-
-  # We'll keep it simple first and see if Polyglot handles it.
-  # If not, more specific collection pagination config might be needed.
-  # Title for paginated pages (optional, for SEO):
-  title: ':title - page :num'
 
 # Jekyll Archives
 jekyll-archives:

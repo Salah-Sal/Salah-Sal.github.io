@@ -1,19 +1,11 @@
 ---
 layout: default
-title: "404 - Page Not Found" # This title is for browser tab, can be static English
-# Polyglot may not easily switch language for root 404.html based on URL.
-# Setting 'lang' here aims to make its content use default_lang's strings if site.active_lang isn't set.
-# Or, it might use default_lang if served directly.
-# For explicit localized 404 pages, one might need /en/404.html and /ar/404.html,
-# but servers usually pick up the root 404.html.
-# We'll use site.default_lang for the strings to ensure it picks one language consistently.
-# Or try with active_lang and see how it behaves in Jekyll's build.
-# Let's try this to see how Polyglot handles it:
+title: "404 - Page Not Found"
 lang: en
-permalink: /404.html # Ensure it's treated as a root page
-sitemap: false # Exclude from sitemap
+permalink: /404.html
+sitemap: false
 ---
-<div style="text-align: center; padding: 50px;">
+<div class="not-found-page">
   <h1>{{ site.data.locales[site.default_lang].not_found_title }}</h1>
   <p>{{ site.data.locales[site.default_lang].not_found_message }}</p>
   <p><a href="{{ '/' | relative_url }}">{{ site.data.locales[site.default_lang].not_found_gohome }}</a></p>

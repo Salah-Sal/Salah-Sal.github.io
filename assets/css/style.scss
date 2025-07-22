@@ -374,6 +374,17 @@ footer {
     border-radius: 8px;
 }
 
+/* 404 Page Styles */
+.not-found-page {
+    text-align: center;
+    padding: 50px 1rem;
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 /* --- Responsive Navigation (Hamburger Menu) --- */
 .back-button,
 .nav-toggle {
