@@ -19,23 +19,22 @@
         updateGiscusTheme(theme);
     }
 
-    function updateGiscusTheme(theme) {
-        const iframe = document.querySelector(giscusIframe);
-        if (!iframe) return;
-
-        // Giscus uses 'light' or 'dark' or a specific theme name like 'gruvbox_dark'
-        // Choose your desired Giscus light/dark themes here
+        function updateGiscusTheme(theme) {
         const giscusTheme = theme === 'dark' ? 'gruvbox_dark' : 'light';
+        const message = { setConfig: { theme: giscusTheme } };
 
-        // More robust: use preferred_color_scheme for Giscus and let it adapt,
-        // or if you specified a dark theme for giscus in _config.yml, it will stay dark.
-        // If you want Giscus to strictly follow site toggle:
-        const message = {
-            setConfig: {
-                theme: giscusTheme
+        let retries = 0;
+        const maxRetries = 10;
+        const interval = setInterval(() => {
+            const iframe = document.querySelector(giscusIframe);
+            if (iframe) {
+                iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+                clearInterval(interval);
+            } else if (retries >= maxRetries) {
+                clearInterval(interval);
             }
-        };
-        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+            retries++;
+        }, 500);
     }
 
     if (themeToggle) {
