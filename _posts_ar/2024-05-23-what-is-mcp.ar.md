@@ -1,13 +1,12 @@
 ---
 layout: post
-title: "🦸🏻#14: ما هو بروتوكول سياق النموذج (MCP)؟ ولمَ الحديث عنه فجأة وبكثرة؟"
+title: "ما هو بروتوكول سياق النموذج (MCP)؟ ولمَ الحديث عنه فجأة وبكثرة؟"
 date: 2024-05-23 10:00:00 +0300
 lang: ar
 categories: [ذكاء اصطناعي, بروتوكولات تقنية]
 tags: [MCP, Anthropic, نماذج لغوية كبيرة, وكلاء الذكاء الاصطناعي]
 ---
 
-[![الصورة الرمزية لـ Ksenia Se](https://cdn-avatars.huggingface.co/v1/production/uploads/64838b28c235ef76b63e4999/ZhQCYoU3vps71Ag7Jezj6.jpeg)](https://huggingface.co/Kseniase)
 
 [Kseniase Ksenia Se](https://huggingface.co/Kseniase)
 
