@@ -26,19 +26,29 @@ exclude_from_localization:
   - "css/"
 parallel_localization: false
 
-# Collections
+# Collections - Separate English and Arabic
 collections:
-  posts:
+  posts_en:
     output: true
-    permalink: /blog/:year/:month/:day/:title.html
+    permalink: /en/blog/:year/:month/:day/:title/
+  posts_ar:
+    output: true
+    permalink: /ar/blog/:year/:month/:day/:title/
 
 # Default layouts
 defaults:
   - scope:
       path: ""
-      type: "posts"
+      type: "posts_en"
     values:
       layout: "post"
+      lang: "en"
+  - scope:
+      path: ""
+      type: "posts_ar"
+    values:
+      layout: "post" 
+      lang: "ar"
   - scope:
       path: "blog"
     values:

@@ -1,0 +1,29 @@
+---
+layout: default
+title: "الرئيسية - العربية"
+lang: ar
+---
+<section class="hero">
+    <h2>مرحباً بكم في مدونتي الاحترافية</h2>
+    <p>شارك خبراتك وأفكارك هنا</p>
+</section>
+
+<section class="recent-posts">
+    <h3>أحدث المقالات العربية</h3>
+    {% for post in site.posts_ar limit:3 %}
+      <article class="post-preview">
+        <h4><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h4>
+        <p class="post-meta">
+          <span class="post-date">{{ post.date | date_to_string }}</span>
+          {% if post.categories.size > 0 %}
+            <span class="post-categories">
+              التصنيفات: {{ post.categories | join: ', ' }}
+            </span>
+          {% endif %}
+        </p>
+        <div class="post-excerpt">{{ post.excerpt }}</div>
+        <p class="read-more-link"><a href="{{ post.url | relative_url }}">اقرأ المزيد...</a></p>
+      </article>
+    {% endfor %}
+    <p><a href="/ar/blog/">عرض جميع المقالات العربية ←</a></p>
+</section>

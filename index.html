@@ -1,29 +1,22 @@
 ---
 layout: default
-title: Home
+title: "Language Selection"
 lang: en
 ---
 <section class="hero">
-    <h2>{{ site.data.locales[site.active_lang].hero_title }}</h2>
-    <p>{{ site.data.locales[site.active_lang].hero_subtitle }}</p>
+    <h2>Welcome / مرحباً</h2>
+    <p>Choose your preferred language / اختر اللغة المفضلة</p>
 </section>
 
-<section class="recent-posts">
-    <h3>{{ site.data.locales[site.active_lang].recent_posts }}</h3>
-    <!-- Blog posts will be automatically listed here by Jekyll -->
-    {% for post in site.posts_by_language[site.active_lang] limit:3 %}
-      <article class="post-preview">
-        <h4><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h4>
-        <p class="post-meta">
-          <span class="post-date">{{ post.date | date_to_string }}</span>
-          {% if post.categories.size > 0 %}
-            <span class="post-categories">
-              {{ site.data.locales[site.active_lang].categories_label }} {{ post.categories | join: ', ' }}
-            </span>
-          {% endif %}
-        </p>
-        <div class="post-excerpt">{{ post.excerpt }}</div>
-        <p class="read-more-link"><a href="{{ post.url | relative_url }}">{{ site.data.locales[site.active_lang].read_more }}</a></p>
-      </article>
-    {% endfor %}
+<section class="language-selection" style="text-align: center; margin-top: 3rem;">
+    <div style="display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/en/" style="display: block; padding: 2rem; border: 2px solid var(--border-color-medium); border-radius: 8px; text-decoration: none; color: var(--text-color); min-width: 200px;">
+            <h3>English</h3>
+            <p>Professional blog content in English</p>
+        </a>
+        <a href="/ar/" style="display: block; padding: 2rem; border: 2px solid var(--border-color-medium); border-radius: 8px; text-decoration: none; color: var(--text-color); min-width: 200px;" dir="rtl">
+            <h3>العربية</h3>
+            <p>محتوى المدونة الاحترافية بالعربية</p>
+        </a>
+    </div>
 </section>

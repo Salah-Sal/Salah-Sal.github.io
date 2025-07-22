@@ -1,0 +1,24 @@
+---
+layout: default
+title: "المدونة العربية"
+lang: ar
+---
+<section class="post-list">
+  <h2>جميع المقالات العربية</h2>
+  
+  {% for post in site.posts_ar %}
+    <article class="post-preview">
+      <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
+      <p class="post-meta">
+        <span class="post-date">{{ post.date | date_to_string }}</span>
+        {% if post.categories.size > 0 %}
+          <span class="post-categories">
+            التصنيفات: {{ post.categories | join: ', ' }}
+          </span>
+        {% endif %}
+      </p>
+      <div class="post-excerpt">{{ post.excerpt }}</div>
+      <p class="read-more-link"><a href="{{ post.url | relative_url }}">اقرأ المزيد...</a></p>
+    </article>
+  {% endfor %}
+</section>
