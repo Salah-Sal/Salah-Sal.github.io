@@ -12,19 +12,10 @@ url: "https://Salah-Sal.github.io"
 # Plugins
 plugins:
   - jekyll-feed
-  - jekyll-polyglot
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-paginate-v2
   - jekyll-archives
-
-# Jekyll Polyglot Configuration
-languages: ["en", "ar"]
-default_lang: "en"
-exclude_from_localization:
-  - "assets/"
-  - "css/"
-parallel_localization: false
 
 # Collections - Separate English and Arabic
 collections:
