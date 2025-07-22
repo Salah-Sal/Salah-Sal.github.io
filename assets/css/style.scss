@@ -532,11 +532,16 @@ nav {
     }
     
     /* Show/hide appropriate elements on mobile */
-    .desktop-only {
-        display: none;
+    .mobile-only {
+        display: none; /* Hidden on desktop */
     }
     
-    .mobile-only {
+    /* Ensure proper display for language switcher and theme toggle */
+    .language-switcher {
+        display: flex;
+    }
+    
+    #theme-toggle {
         display: block;
     }
 
@@ -609,6 +614,21 @@ nav {
     .nav-links .mobile-only a {
         font-size: 1.25rem;
         font-weight: 400;
+    }
+    
+    /* Show/hide appropriate elements on mobile */
+    @media (max-width: 768px) {
+        .mobile-only {
+            display: block; /* Visible on mobile */
+        }
+        
+        .language-switcher {
+            display: none; /* Hide desktop language switcher on mobile */
+        }
+        
+        #theme-toggle {
+            display: none; /* Hide desktop theme toggle on mobile */
+        }
     }
     
     /* General Layout adjustments for mobile */
