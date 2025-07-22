@@ -1,9 +1,8 @@
 ---
-layout: page # Changed to page as per instruction, was default
-title: About
-lang: en
+layout: page
+title: about_title
 ---
 <section class="about">
-    <h2>About Me</h2>
-    <p>Write your introduction and professional background here.</p>
+    <h2>{{ site.data.locales[site.active_lang].about_title }}</h2>
+    <p>{{ site.data.locales[site.active_lang].about_content }}</p>
 </section>
