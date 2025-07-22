@@ -5,6 +5,7 @@ lang: "{{ site.active_lang | default: site.default_lang }}"
 pagination:
   enabled: true
   collection: posts
+  filter: "lang"
   per_page: 5
   sort_field: 'date'
   sort_reverse: true
@@ -38,7 +39,7 @@ pagination:
         <span class="previous disabled">{{ site.data.locales[site.active_lang].pagination_previous }}</span>
       {% endif %}
 
-      <span class="page_number">{{ paginator.page }} of {{ paginator.total_pages }}</span>
+      <span class="page_number">{{ site.data.locales[site.active_lang].pagination_page_of | printf: paginator.page, paginator.total_pages }}</span>
 
       {% if paginator.next_page %}
         <a href="{{ paginator.next_page_path | relative_url }}" class="next">{{ site.data.locales[site.active_lang].pagination_next }}</a>

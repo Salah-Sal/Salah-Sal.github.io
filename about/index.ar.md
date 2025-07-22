@@ -1,7 +1,7 @@
 ---
 layout: page
-title: "About Me"
-lang: en
+title: "حول"
+lang: ar
 ---
 <section class="about">
     <h2>{{ site.data.locales[site.active_lang].about_title }}</h2>

@@ -16,6 +16,7 @@ plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-paginate-v2
+  - jekyll-archives
 
 # Jekyll Polyglot Configuration
 languages: ["en", "ar"]
@@ -81,3 +82,12 @@ pagination:
   # If not, more specific collection pagination config might be needed.
   # Title for paginated pages (optional, for SEO):
   title_suffix: ' - page :num'
+
+# Jekyll Archives
+jekyll-archives:
+  enabled:
+    - categories
+  layouts:
+    category: category_archive
+  permalinks:
+    category: '/blog/category/:name/'
