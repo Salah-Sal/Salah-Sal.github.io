@@ -20,9 +20,19 @@
     }
 
         function updateGiscusTheme(theme) {
-        const giscusTheme = theme === 'dark' ? 'gruvbox_dark' : 'light';
+        // Use the same themes as configured - preferred_color_scheme will auto-adapt
+        // But we can still send manual updates when user toggles
+        const giscusTheme = theme === 'dark' ? 'dark_dimmed' : 'light';
         const message = { setConfig: { theme: giscusTheme } };
 
+        // Try to update Giscus theme immediately if iframe exists
+        const iframe = document.querySelector(giscusIframe);
+        if (iframe) {
+            iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+            return;
+        }
+
+        // Otherwise wait for iframe to load with retries
         let retries = 0;
         const maxRetries = 10;
         const interval = setInterval(() => {

@@ -198,3 +198,29 @@ footer {
 .recent-posts .post-preview h4 a {
     text-decoration: none;
 }
+
+/* Comments Section */
+.comments {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color-light);
+}
+
+.comments h2 {
+    color: var(--text-color-headings);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+/* Giscus iframe container */
+.giscus {
+    background-color: var(--body-bg);
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+/* Override for Giscus specific elements when they load */
+.giscus-frame {
+    background-color: var(--body-bg) !important;
+    color-scheme: light dark;
+}

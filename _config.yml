@@ -60,7 +60,7 @@ giscus:
   reactions_enabled: "1" # Or 1
   emit_metadata: "0" # Or 0
   input_position: "bottom" # "top" or "bottom"
-  theme: "preferred_color_scheme" # e.g., "light", "dark", "preferred_color_scheme", "transparent_dark", "gruvbox_dark"
+  theme: "preferred_color_scheme" # This will automatically adapt to the user's system theme
   # lang will be handled dynamically in the script include
 
 # Pagination Settings (jekyll-paginate-v2)
