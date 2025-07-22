@@ -4,27 +4,26 @@ title: "المدونة العربية"
 lang: ar
 ---
 
-<main class="minimal-blog-ar" style="max-width: 700px; margin: 10vh auto; padding: 0 2rem;">
-    <header style="text-align: center; margin-bottom: 4rem;">
-        <h1 style="font-size: 2rem; font-weight: 300; margin: 0; color: var(--text-color); font-family: 'Noto Sans Arabic', serif;">
+<main class="blog-list-ar">
+    <header>
+        <h1>
             المدونة العربية
         </h1>
     </header>
 
-    <section class="posts-list" style="text-align: right;">
+    <section class="posts-list">
         {% for post in site.posts_ar %}
-            <article style="margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border-color-light);">
-                <time style="font-size: 0.85rem; color: var(--text-color-muted); font-weight: 300; display: block; margin-bottom: 0.5rem;">
+            <article>
+                <time>
                     {{ post.date | date: "%d %B %Y" }}
                 </time>
-                <h2 style="margin: 0 0 1rem 0; font-size: 1.5rem; font-weight: 400; line-height: 1.4;">
-                    <a href="{{ post.url | relative_url }}" style="color: var(--text-color); text-decoration: none; transition: color 0.2s;"
-                       onmouseover="this.style.color='var(--link-color)'" onmouseout="this.style.color='var(--text-color)'">
+                <h2>
+                    <a href="{{ post.url | relative_url }}">
                         {{ post.title }}
                     </a>
                 </h2>
                 {% if post.excerpt %}
-                    <p style="margin: 0; color: var(--text-color-muted); line-height: 1.7; font-size: 1rem;">
+                    <p>
                         {{ post.excerpt | strip_html | truncatewords: 25 }}
                     </p>
                 {% endif %}
@@ -32,9 +31,9 @@ lang: ar
         {% endfor %}
     </section>
 
-    <footer style="text-align: center; margin-top: 4rem;">
-        <p style="color: var(--text-color-muted); font-size: 0.9rem;">
-            <a href="/" style="color: var(--text-color-muted); text-decoration: none;">← العودة للرئيسية</a>
+    <footer>
+        <p>
+            <a href="/">← العودة للرئيسية</a>
         </p>
     </footer>
 

@@ -224,3 +224,328 @@ footer {
     background-color: var(--body-bg) !important;
     color-scheme: light dark;
 }
+
+/* --- STYLES MIGRATED FROM INLINE --- */
+/* Styles for Arabic Homepage (/ar/index.html) */
+.home-ar {
+    max-width: 600px;
+    margin: 15vh auto;
+    padding: 0 2rem;
+    text-align: center;
+
+    header {
+        margin-bottom: 4rem;
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin: 0;
+            color: var(--text-color);
+            font-family: 'Noto Sans Arabic', serif;
+        }
+        p {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+            color: var(--text-color-muted);
+            font-weight: 300;
+        }
+    }
+
+    .recent-posts {
+        text-align: right;
+        border-top: 1px solid var(--border-color-medium);
+        padding-top: 2rem;
+        article {
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color-light);
+            time {
+                font-size: 0.9rem;
+                color: var(--text-color-muted);
+                font-weight: 300;
+            }
+            h2 {
+                margin: 0.5rem 0;
+                font-size: 1.5rem;
+                font-weight: 400;
+                a {
+                    color: var(--text-color);
+                    text-decoration: none;
+                    border-bottom: 1px solid transparent;
+                    transition: border-color 0.2s;
+                    &:hover {
+                        border-bottom-color: var(--text-color-link);
+                    }
+                }
+            }
+            p {
+                margin: 0.5rem 0;
+                color: var(--text-color-muted);
+                line-height: 1.6;
+                font-size: 1rem;
+            }
+        }
+        nav a {
+            color: var(--text-color-muted);
+            text-decoration: none;
+            font-size: 1rem;
+            border-bottom: 1px solid var(--border-color-medium);
+            transition: color 0.2s, border-color 0.2s;
+            &:hover {
+                color: var(--text-color-link);
+                border-bottom-color: var(--text-color-link);
+            }
+        }
+    }
+}
+
+/* Styles for Arabic Blog List (/ar/blog/index.html) */
+.blog-list-ar {
+    max-width: 700px;
+    margin: 10vh auto;
+    padding: 0 2rem;
+
+    header {
+        text-align: center;
+        margin-bottom: 4rem;
+        h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            margin: 0;
+            color: var(--text-color);
+            font-family: 'Noto Sans Arabic', serif;
+        }
+    }
+
+    .posts-list {
+        text-align: right;
+        article {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color-light);
+            time {
+                font-size: 0.85rem;
+                color: var(--text-color-muted);
+                font-weight: 300;
+                display: block;
+                margin-bottom: 0.5rem;
+            }
+            h2 {
+                margin: 0 0 1rem 0;
+                font-size: 1.5rem;
+                font-weight: 400;
+                line-height: 1.4;
+                a {
+                    color: var(--text-color);
+                    text-decoration: none;
+                    transition: color 0.2s;
+                    &:hover {
+                        color: var(--text-color-link);
+                    }
+                }
+            }
+            p {
+                margin: 0;
+                color: var(--text-color-muted);
+                line-height: 1.7;
+                font-size: 1rem;
+            }
+        }
+    }
+    
+    footer {
+        text-align: center;
+        margin-top: 4rem;
+        padding: 0;
+        background: none;
+        border: none;
+        p a {
+            color: var(--text-color-muted);
+            text-decoration: none;
+            &:hover {
+                color: var(--text-color-link);
+            }
+        }
+    }
+}
+
+/* --- RESPONSIVE STYLES --- */
+
+/* Make images and other embedded content responsive */
+.post-content img,
+.post-content video,
+.post-content iframe {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* --- Responsive Navigation (Hamburger Menu) --- */
+.nav-toggle {
+    display: none;
+    padding: .5em;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    position: absolute;
+    right: 1em;
+    top: 1.2rem;
+    z-index: 1000;
+}
+
+body[dir="rtl"] .nav-toggle {
+    right: auto;
+    left: 1em;
+}
+
+.hamburger {
+    display: block;
+    position: relative;
+    background: var(--text-color);
+    width: 2em;
+    height: 3px;
+    border-radius: 1px;
+    transition: transform 250ms ease-in-out;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: var(--text-color);
+    height: 3px;
+    border-radius: 1px;
+    transition: transform 250ms ease-in-out;
+}
+
+.hamburger::before { top: -8px; }
+.hamburger::after { bottom: -8px; }
+
+.nav-open .hamburger {
+    transform: rotate(0.625turn);
+}
+.nav-open .hamburger::before {
+    transform: rotate(90deg) translateX(-8px);
+}
+.nav-open .hamburger::after {
+    opacity: 0;
+}
+
+/* Update nav styles for responsive menu */
+nav {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.nav-links ul {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- Media Queries for Responsiveness --- */
+
+/* For tablets and smaller devices (<= 992px) */
+@media (max-width: 992px) {
+    main {
+        padding: 2rem;
+    }
+}
+
+/* For mobile phones (<= 768px) */
+@media (max-width: 768px) {
+    .nav-toggle {
+        display: block;
+    }
+
+    nav {
+        justify-content: space-between;
+    }
+    
+    /* Initially hide theme toggle and language switcher on mobile to simplify header */
+    #theme-toggle, .language-switcher {
+        display: none;
+    }
+
+    .nav-links {
+        position: fixed;
+        background: var(--body-bg);
+        color: var(--text-color);
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 900;
+        
+        transform: translateX(100%);
+        transition: transform 250ms cubic-bezier(.5, 0, .5, 1);
+    }
+    
+    body[dir="rtl"] .nav-links {
+        transform: translateX(-100%);
+    }
+
+    .nav-links.nav-open {
+        transform: translateX(0);
+    }
+
+    .nav-links ul {
+        list-style: none;
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        padding: 0;
+        gap: 2rem;
+    }
+
+    .nav-links li {
+        margin: 0;
+    }
+
+    .nav-links a {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    /* General Layout adjustments for mobile */
+    main {
+        padding: 1.5rem 1rem;
+    }
+    
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+
+    .post-title,
+    .home-ar header h1,
+    .blog-list-ar header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .home-ar {
+      margin: 5vh auto;
+      padding: 0 1rem;
+    }
+    
+    .blog-list-ar {
+      margin: 5vh auto;
+      padding: 0 1rem;
+    }
+    
+    .home-ar header h1 {
+        font-size: 2rem;
+    }
+    
+    .blog-list-ar header h1 {
+        font-size: 1.8rem;
+    }
+}

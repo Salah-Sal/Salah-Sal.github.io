@@ -4,6 +4,18 @@
     const toggleIcon = themeToggle ? themeToggle.querySelector('.toggle-icon') : null;
     const giscusIframe = '.giscus-frame'; // Selector for Giscus iframe
 
+    // --- New Nav Toggle Logic ---
+    const navToggle = document.querySelector('.nav-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (navToggle) {
+        navToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('nav-open');
+            navToggle.classList.toggle('nav-open'); // Optional: animate hamburger
+        });
+    }
+    // --- End of New Nav Toggle Logic ---
+
     const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
     function setTheme(theme) {

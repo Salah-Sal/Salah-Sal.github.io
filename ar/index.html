@@ -4,31 +4,31 @@ title: "الرئيسية"
 lang: ar
 ---
 
-<main class="minimal-ar" style="max-width: 600px; margin: 15vh auto; padding: 0 2rem; text-align: center;">
-    <header style="margin-bottom: 4rem;">
-        <h1 style="font-size: 2.5rem; font-weight: 300; margin: 0; color: var(--text-color); font-family: 'Noto Sans Arabic', serif;">صلاح</h1>
-        <p style="font-size: 1.2rem; margin: 0.5rem 0; color: var(--text-color-muted); font-weight: 300;">تقنية • خوارزميات • ذكاء اصطناعي</p>
+<main class="home-ar">
+    <header>
+        <h1>صلاح</h1>
+        <p>تقنية • خوارزميات • ذكاء اصطناعي</p>
     </header>
 
-    <section class="recent-posts" style="text-align: right; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+    <section class="recent-posts">
         {% for post in site.posts_ar limit:2 %}
-            <article style="margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color-light);">
-                <time style="font-size: 0.9rem; color: var(--text-color-muted); font-weight: 300;">
+            <article>
+                <time>
                     {{ post.date | date: "%d %B %Y" }}
                 </time>
-                <h2 style="margin: 0.5rem 0; font-size: 1.5rem; font-weight: 400;">
-                    <a href="{{ post.url | relative_url }}" style="color: var(--text-color); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.2s;">
+                <h2>
+                    <a href="{{ post.url | relative_url }}">
                         {{ post.title }}
                     </a>
                 </h2>
-                <p style="margin: 0.5rem 0; color: var(--text-color-muted); line-height: 1.6; font-size: 1rem;">
+                <p>
                     {{ post.excerpt | strip_html | truncatewords: 20 }}
                 </p>
             </article>
         {% endfor %}
         
-        <nav style="margin-top: 3rem;">
-            <a href="/ar/blog/" style="color: var(--text-color-muted); text-decoration: none; font-size: 1rem; border-bottom: 1px solid var(--border-color);">
+        <nav>
+            <a href="/ar/blog/">
                 جميع المقالات →
             </a>
         </nav>
