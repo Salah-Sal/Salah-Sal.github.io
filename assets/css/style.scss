@@ -468,9 +468,13 @@ nav {
         justify-content: space-between;
     }
     
-    /* Initially hide theme toggle and language switcher on mobile to simplify header */
-    #theme-toggle, .language-switcher {
+    /* Show/hide appropriate elements on mobile */
+    .desktop-only {
         display: none;
+    }
+    
+    .mobile-only {
+        display: block;
     }
 
     .nav-links {
@@ -506,6 +510,20 @@ nav {
         padding: 0;
         gap: 2rem;
     }
+    
+    .mobile-only {
+        display: none; /* Hidden on desktop */
+    }
+    
+    @media (max-width: 768px) {
+        .mobile-only {
+            display: block; /* Visible on mobile */
+        }
+        
+        .desktop-only {
+            display: none; /* Hidden on mobile */
+        }
+    }
 
     .nav-links li {
         margin: 0;
@@ -514,6 +532,20 @@ nav {
     .nav-links a {
         font-size: 1.5rem;
         font-weight: bold;
+        &.active {
+            color: var(--text-color-link);
+        }
+    }
+    
+    .nav-links .mobile-only {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color-light);
+    }
+    
+    .nav-links .mobile-only a {
+        font-size: 1.25rem;
+        font-weight: 400;
     }
     
     /* General Layout adjustments for mobile */

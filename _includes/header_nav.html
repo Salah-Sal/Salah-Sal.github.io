@@ -12,15 +12,19 @@
                     <li><a href="/ar/">الرئيسية</a></li>
                     <li><a href="/ar/blog/">المدونة</a></li>
                     <li><a href="/about/index.ar.html">حول</a></li>
+                    <li class="mobile-only"><a href="/">English</a></li>
+                    <li class="mobile-only active"><a href="/ar/">العربية</a></li>
                 {% else %}
                     <li><a href="/">Home</a></li>
                     <li><a href="/en/blog/">Blog</a></li>
                     <li><a href="/about/">About</a></li>
+                    <li class="mobile-only"><a href="/" class="active">English</a></li>
+                    <li class="mobile-only"><a href="/ar/">العربية</a></li>
                 {% endif %}
             </ul>
         </div>
         
-        <ul class="language-switcher">
+        <ul class="language-switcher desktop-only">
             {% if page.lang == 'ar' %}
                 <li><a href="/">English</a></li>
                 <li><a href="/ar/" class="active">العربية</a></li>
@@ -29,7 +33,7 @@
                 <li><a href="/ar/">العربية</a></li>
             {% endif %}
         </ul>
-        <button id="theme-toggle" title="Toggle theme">
+        <button id="theme-toggle" title="Toggle theme" class="desktop-only">
             <span class="toggle-icon">☀️</span>
         </button>
         
