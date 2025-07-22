@@ -2,7 +2,7 @@
 layout: post
 title: "My First Blog Post"
 date: 2024-03-21
-categories: blog
+categories: [blog]
 lang: en
 ---
 

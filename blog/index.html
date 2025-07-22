@@ -2,21 +2,18 @@
 layout: default
 title: Blog # Localized by all_posts string later
 lang: "{{ site.active_lang | default: site.default_lang }}"
-pagination:
-  enabled: true
-  # collection: posts # Default is posts
-  # permalink: '/:lang/blog/page/:num/' # Polyglot should handle pathing
+
 ---
 <section class="post-list">
   <h2>{{ site.data.locales[site.active_lang].all_posts }}</h2>
-  {% for post in paginator.posts %}
+  {% for post in site.posts_by_language[site.active_lang] %}
     <article class="post-preview">
       <h3><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h3>
       <p class="post-meta">
         <span class="post-date">{{ post.date | date_to_string }}</span>
         {% if post.categories.size > 0 %}
           <span class="post-categories">
-            Categories: {{ post.categories | join: ', ' }} {# Keep "Categories:" as is for now #}
+            {{ site.data.locales[site.active_lang].post_categories | default: 'Categories' }}: {{ post.categories | join: ', ' }} {# Keep "Categories:" as is for now #}
           </span>
         {% endif %}
       </p>
@@ -27,21 +24,5 @@ pagination:
     <p>No posts found.</p> {# Consider localizing this later #}
   {% endfor %}
 
-  {% if paginator.total_pages > 1 %}
-    <div class="pagination">
-      {% if paginator.previous_page %}
-        <a href="{{ paginator.previous_page_path | relative_url }}" class="previous">Previous</a>
-      {% else %}
-        <span class="previous disabled">Previous</span>
-      {% endif %}
-
-      <span class="page_number">Page: {{ paginator.page }} of {{ paginator.total_pages }}</span>
-
-      {% if paginator.next_page %}
-        <a href="{{ paginator.next_page_path | relative_url }}" class="next">Next</a>
-      {% else %}
-        <span class="next disabled">Next</span>
-      {% endif %}
-    </div>
-  {% endif %}
+  
 </section>
