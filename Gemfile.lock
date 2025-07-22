@@ -18,6 +18,7 @@ GEM
     ffi (1.17.2-arm-linux-gnu)
     ffi (1.17.2-arm-linux-musl)
     ffi (1.17.2-arm64-darwin)
+    ffi (1.17.2-x64-mingw-ucrt)
     ffi (1.17.2-x86-linux-gnu)
     ffi (1.17.2-x86-linux-musl)
     ffi (1.17.2-x86_64-darwin)
@@ -34,6 +35,9 @@ GEM
       bigdecimal
       rake (>= 13)
     google-protobuf (4.31.0-arm64-darwin)
+      bigdecimal
+      rake (>= 13)
+    google-protobuf (4.31.0-x64-mingw-ucrt)
       bigdecimal
       rake (>= 13)
     google-protobuf (4.31.0-x86-linux-gnu)
@@ -73,6 +77,8 @@ GEM
       safe_yaml (~> 1.0)
       terminal-table (>= 1.8, < 4.0)
       webrick (~> 1.7)
+    jekyll-archives (2.3.0)
+      jekyll (>= 3.6, < 5.0)
     jekyll-feed (0.17.0)
       jekyll (>= 3.7, < 5.0)
     jekyll-paginate-v2 (3.0.0)
@@ -97,10 +103,6 @@ GEM
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
     mercenary (0.4.0)
-    minima (2.5.2)
-      jekyll (>= 3.5, < 5.0)
-      jekyll-feed (~> 0.9)
-      jekyll-seo-tag (~> 2.1)
     pathutil (0.16.2)
       forwardable-extended (~> 2.6)
     public_suffix (6.0.2)
@@ -134,6 +136,8 @@ GEM
       google-protobuf (~> 4.31)
     sass-embedded (1.89.0-riscv64-linux-musl)
       google-protobuf (~> 4.31)
+    sass-embedded (1.89.0-x64-mingw-ucrt)
+      google-protobuf (~> 4.31)
     sass-embedded (1.89.0-x86_64-darwin)
       google-protobuf (~> 4.31)
     sass-embedded (1.89.0-x86_64-linux-android)
@@ -161,6 +165,7 @@ PLATFORMS
   riscv64-linux-gnu
   riscv64-linux-musl
   ruby
+  x64-mingw-ucrt
   x86-linux-gnu
   x86-linux-musl
   x86_64-darwin
@@ -170,12 +175,12 @@ PLATFORMS
 
 DEPENDENCIES
   jekyll (~> 4.2)
+  jekyll-archives
   jekyll-feed (~> 0.15)
   jekyll-paginate-v2 (~> 3.0)
   jekyll-polyglot (~> 1.7)
   jekyll-seo-tag (~> 2.8)
   jekyll-sitemap (~> 1.4)
-  minima (~> 2.5)
 
 BUNDLED WITH
    2.6.9

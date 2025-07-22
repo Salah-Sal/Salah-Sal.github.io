@@ -24,13 +24,13 @@ default_lang: "en"
 exclude_from_localization:
   - "assets/"
   - "css/"
-parallel_localization: true
+parallel_localization: false
 
 # Collections
 collections:
   posts:
     output: true
-    permalink: /blog/:year/:month/:day/:title
+    permalink: /blog/:year/:month/:day/:title.html
 
 # Default layouts
 defaults:
@@ -81,7 +81,7 @@ pagination:
   # We'll keep it simple first and see if Polyglot handles it.
   # If not, more specific collection pagination config might be needed.
   # Title for paginated pages (optional, for SEO):
-  title_suffix: ' - page :num'
+  title: ':title - page :num'
 
 # Jekyll Archives
 jekyll-archives:

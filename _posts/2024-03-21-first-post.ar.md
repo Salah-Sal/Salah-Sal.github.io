@@ -2,7 +2,7 @@
 layout: post
 title: "[AR] My First Blog Post"
 date: 2024-03-21
-categories: [blog]
+categories: [personal]
 lang: ar
 ---
 
