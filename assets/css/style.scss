@@ -30,8 +30,8 @@ body.dark-mode {
     --text-color: #ccc;
     --text-color-headings: #eee;
     --text-color-muted: #aaa;
-    --text-color-link: #58a6ff;
-    --text-color-link-hover: #80bfff;
+    --text-color-link: #4fc3f7;
+    --text-color-link-hover: #81d4fa;
     --header-bg: #222;
     --header-text: #ccc;
     --footer-bg: #222;
@@ -63,6 +63,17 @@ body {
 
 body[dir="rtl"] {
     font-family: 'Noto Sans Arabic', sans-serif;
+}
+
+/* General link styles */
+a {
+    color: var(--text-color-link);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--text-color-link-hover);
+    text-decoration: underline;
 }
 
 header {
