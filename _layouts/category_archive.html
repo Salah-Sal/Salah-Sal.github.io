@@ -9,14 +9,7 @@ layout: default
   </header>
 
   <div class="post-list">
-    {% assign category_posts = site.categories[page.category_name] | default: empty_array %}
-    {% assign posts_in_lang = "" | split: "" %} {# Initialize as empty array #}
-
-    {% for post_item in category_posts %}
-      {% if post_item.lang == site.active_lang %}
-        {% assign posts_in_lang = posts_in_lang | push: post_item %}
-      {% endif %}
-    {% endfor %}
+    {% assign posts_in_lang = site.categories[page.category_name] | where_exp: "post", "post.lang == site.active_lang" %}
 
     {% if posts_in_lang.size > 0 %}
       {% for post_item in posts_in_lang %}
