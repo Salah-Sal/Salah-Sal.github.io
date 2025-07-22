@@ -30,9 +30,17 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
       - name: Build with Jekyll
-        run: bundle exec jekyll build
+        run: bundle exec jekyll build --verbose
         env:
           JEKYLL_ENV: production
+      - name: List generated files
+        run: |
+          echo "=== Generated _site structure ==="
+          find _site -type f -name "*.html" | head -10
+          echo "=== Assets structure ==="
+          find _site -path "*/assets/*" | head -10
+          echo "=== CSS files ==="
+          find _site -name "*.css"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
