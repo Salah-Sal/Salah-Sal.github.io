@@ -1,9 +1,9 @@
 ---
 layout: post
-title: "[AR] 5 Productivity Tips for Developers"
+title: "5 نصائح لزيادة إنتاجية المطورين"
 date: 2024-03-18
 categories: [productivity, career]
 lang: ar
 ---
 
-[Arabic translation of the post content goes here.]
+إليكم 5 نصائح مهمة لزيادة الإنتاجية في العمل كمطور برمجيات.

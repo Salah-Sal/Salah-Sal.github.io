@@ -1,10 +1,10 @@
 ---
 layout: post
-title: "[AR] Welcome to AI & NLP Insights!"
+title: "مرحباً بكم في عالم الذكاء الاصطناعي ومعالجة اللغات!"
 date: 2024-05-23 11:00:00 +0300
 lang: ar
 categories: [AI, Welcome]
 tags: [introduction, hello]
 ---
 
-[Arabic translation of the post content goes here.]
+نرحب بكم في رحلة استكشاف عالم الذكاء الاصطناعي ومعالجة اللغات الطبيعية المثير.

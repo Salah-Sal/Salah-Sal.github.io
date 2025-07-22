@@ -1,9 +1,9 @@
 ---
 layout: post
-title: "[AR] My First Blog Post"
+title: "مقالتي الأولى في المدونة"
 date: 2024-03-21
 categories: [personal]
 lang: ar
 ---
 
-[Arabic translation of the post content goes here.]
+أهلاً وسهلاً بكم في مدونتي الجديدة! هذه هي مقالتي الأولى وأتطلع لمشاركة المزيد من المحتوى معكم.

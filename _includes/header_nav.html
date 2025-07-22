@@ -1,6 +1,10 @@
 <header>
     <nav>
-        <h1><a href="/">{{ site.title }}</a></h1>
+        {% if page.lang == 'ar' %}
+            <h1><a href="/ar/">مدونتي الاحترافية</a></h1>
+        {% else %}
+            <h1><a href="/">{{ site.title }}</a></h1>
+        {% endif %}
         <ul>
             {% if page.lang == 'ar' %}
                 <li><a href="/ar/">الرئيسية</a></li>

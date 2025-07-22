@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ site.active_lang | default: site.default_lang | default: 'en' }}" dir="{{ site.data.locales[site.active_lang].direction | default: 'ltr' }}">
+<html lang="{{ page.lang | default: 'en' }}" dir="{% if page.lang == 'ar' %}rtl{% else %}ltr{% endif %}">
 <head>
     {%- include head_common.html -%}
 </head>
