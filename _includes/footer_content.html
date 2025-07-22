@@ -1,3 +1,4 @@
 <footer>
-    <p>{{ site.data.locales[site.active_lang].footer_copyright | replace: '%s', site.time | date: "%Y" }}</p>
+        {% assign current_year = site.time | date: "%Y" %}
+    <p>{{ site.data.locales[site.active_lang].footer_copyright | replace: '%s', current_year }}</p>
 </footer>
