@@ -1,47 +1,50 @@
 <header>
     <nav>
-        {% if page.lang == 'ar' %}
-            <h1><a href="/ar/">مدونة صلاح</a></h1>
-        {% else %}
-            <h1><a href="/">{{ site.title }}</a></h1>
+        {%- assign lang = page.lang | default: 'en' -%}
+        {%- assign home_url = "/" -%}
+        {%- assign blog_url = "/en/blog/" -%}
+        {%- assign about_url = "/about/" -%}
+        {%- assign site_title = site.title -%}
+
+        {% if lang == 'ar' %}
+            {%- assign home_url = "/ar/" -%}
+            {%- assign blog_url = "/ar/blog/" -%}
+            {%- assign about_url = "/about/index.ar.html" -%}
+            {%- assign site_title = "مدونة صلاح" -%}
         {% endif %}
 
+        <h1><a href="{{ home_url }}">{{ site_title }}</a></h1>
+
         {% if page.layout == 'post' %}
-        <button class="back-button" aria-label="Go back" onclick="goBack()">
-            <span class="back-icon">←</span>
-        </button>
+            <button class="back-button" aria-label="Go back">
+                <span class="back-icon">←</span>
+            </button>
         {% endif %}
         
+        <!-- All nav items are now grouped together -->
         <div class="nav-links">
             <ul>
-                {% if page.lang == 'ar' %}
-                    <li><a href="/ar/">الرئيسية</a></li>
-                    <li><a href="/ar/blog/">المدونة</a></li>
-                    <li><a href="/about/index.ar.html">حول</a></li>
+                <li><a href="{{ home_url }}">{{ site.data.locales[lang].nav_home }}</a></li>
+                <li><a href="{{ blog_url }}">{{ site.data.locales[lang].nav_blog }}</a></li>
+                <li><a href="{{ about_url }}">{{ site.data.locales[lang].nav_about }}</a></li>
+            </ul>
+
+            <ul class="language-switcher">
+                {% if lang == 'ar' %}
+                    <li><a href="/">English</a></li>
+                    <li><a href="/ar/" class="active">العربية</a></li>
                 {% else %}
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/en/blog/">Blog</a></li>
-                    <li><a href="/about/">About</a></li>
+                    <li><a href="/" class="active">English</a></li>
+                    <li><a href="/ar/">العربية</a></li>
                 {% endif %}
             </ul>
+            <button id="theme-toggle" title="Toggle theme">
+                <span class="toggle-icon">☀️</span>
+            </button>
         </div>
-        
-        <ul class="language-switcher">
-            {% if page.lang == 'ar' %}
-                <li><a href="/">English</a></li>
-                <li><a href="/ar/" class="active">العربية</a></li>
-            {% else %}
-                <li><a href="/" class="active">English</a></li>
-                <li><a href="/ar/">العربية</a></li>
-            {% endif %}
-        </ul>
-        <button id="theme-toggle" title="Toggle theme" class="desktop-only">
-            <span class="toggle-icon">☀️</span>
-        </button>
         
         <button class="nav-toggle" aria-label="toggle navigation">
             <span class="hamburger"></span>
         </button>
-
     </nav>
 </header>
