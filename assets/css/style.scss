@@ -380,25 +380,58 @@ footer {
 }
 
 /* --- Responsive Navigation (Hamburger Menu) --- */
+.back-button,
 .nav-toggle {
-    display: none;
     padding: .5em;
     background: transparent;
     border: 0;
     cursor: pointer;
+    color: var(--text-color);
+    transition: color 0.2s ease;
+    
+    &:hover {
+        color: var(--text-color-link);
+    }
+}
+
+.back-button {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    margin-right: 1rem;
+    font-size: 1.5rem;
+    line-height: 1;
+    
+    .back-icon {
+        display: inline-block;
+    }
+    
+    body[dir="rtl"] & {
+        left: auto;
+        right: 1rem;
+        margin-right: 0;
+        margin-left: 1rem;
+        transform: translateY(-50%) rotate(180deg); /* Flip arrow for RTL */
+    }
+}
+
+.nav-toggle {
+    display: none;
     position: absolute;
     right: 1rem;
     top: 50%;
     transform: translateY(-50%);
     z-index: 1000;
     margin-left: 1rem;
-}
-
-body[dir="rtl"] .nav-toggle {
-    right: auto;
-    left: 1rem;
-    margin-left: 0;
-    margin-right: 1rem;
+    
+    body[dir="rtl"] & {
+        right: auto;
+        left: 1rem;
+        margin-left: 0;
+        margin-right: 1rem;
+    }
 }
 
 .hamburger {
@@ -443,10 +476,10 @@ nav {
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    padding: 1rem 3.5rem 1rem 1rem; /* Make space for hamburger button */
+    padding: 1rem 6rem 1rem 3.5rem; /* Make space for both back button and hamburger */
     
     body[dir="rtl"] & {
-        padding: 1rem 1rem 1rem 3.5rem;
+        padding: 1rem 3.5rem 1rem 6rem; /* Reverse padding for RTL */
     }
     
     h1 {

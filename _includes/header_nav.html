@@ -6,6 +6,10 @@
             <h1><a href="/">{{ site.title }}</a></h1>
         {% endif %}
 
+        <button class="back-button" aria-label="Go back" onclick="goBack()">
+            <span class="back-icon">←</span>
+        </button>
+        
         <div class="nav-links">
             <ul>
                 {% if page.lang == 'ar' %}

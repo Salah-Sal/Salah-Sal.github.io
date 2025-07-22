@@ -4,6 +4,29 @@
     const toggleIcon = themeToggle ? themeToggle.querySelector('.toggle-icon') : null;
     const giscusIframe = '.giscus-frame'; // Selector for Giscus iframe
 
+// --- Back Button Functionality ---
+    function goBack() {
+        if (document.referrer) {
+            // Go back to previous page if referrer exists
+            window.history.back();
+        } else {
+            // Fallback: go to homepage based on current language
+            const currentLang = document.documentElement.lang || 'en';
+            if (currentLang === 'ar') {
+                window.location.href = '/ar/';
+            } else {
+                window.location.href = '/';
+            }
+        }
+    }
+    
+    // Add click handler to back button
+    const backButton = document.querySelector('.back-button');
+    if (backButton) {
+        backButton.addEventListener('click', goBack);
+    }
+    // --- End of Back Button Functionality ---
+
     // --- New Nav Toggle Logic ---
     const navToggle = document.querySelector('.nav-toggle');
     const navLinks = document.querySelector('.nav-links');
