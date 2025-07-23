@@ -5,6 +5,9 @@ date: 2024-05-23 10:00:00 +0300
 lang: ar
 categories: [ذكاء اصطناعي, بروتوكولات تقنية]
 tags: [MCP, Anthropic, نماذج لغوية كبيرة, وكلاء الذكاء الاصطناعي]
+translation: true
+original_author: "Kseniase Ksenia Se"
+original_link: "https://huggingface.co/blog/Kseniase/mcp"
 ---
 
 

@@ -197,6 +197,23 @@ footer {
     color: var(--category-text);
 }
 
+.translation-notice {
+    margin: 2rem 0;
+    padding: 1rem 1.5rem;
+    background-color: var(--blockquote-bg);
+    border-left: 5px solid var(--border-color-blockquote);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    color: var(--blockquote-text);
+}
+
+.translation-notice p {
+    margin: 0;
+}
+
+.translation-notice strong {
+    color: var(--text-color);
+}
 
 /* Comments Section */
 .comments {
@@ -367,6 +384,138 @@ footer {
     }
 }
 
+/* ==========================================================================
+   Post Content Styling
+   ========================================================================== */
+
+.post-content {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- Typography --- */
+
+.post-content h2,
+.post-content h3,
+.post-content h4,
+.post-content h5,
+.post-content h6 {
+    color: var(--text-color-headings);
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.post-content h2 {
+    font-size: 1.8rem;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color-light);
+    padding-bottom: 0.5rem;
+}
+
+.post-content h3 {
+    font-size: 1.4rem;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.post-content p {
+    margin-bottom: 1.25rem;
+    line-height: 1.8;
+}
+
+.post-content a {
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.post-content a:hover {
+    color: var(--text-color-link-hover);
+    text-decoration-color: var(--text-color-link-hover);
+}
+
+.post-content ul,
+.post-content ol {
+    margin-bottom: 1.5rem;
+    padding-inline-start: 2rem;
+}
+
+.post-content li {
+    margin-bottom: 0.75rem;
+}
+
+/* --- Block Elements --- */
+
+.post-content blockquote {
+    margin: 2rem 0;
+    padding: 1rem 1.5rem;
+    background-color: var(--blockquote-bg);
+    border-inline-start: 5px solid var(--border-color-blockquote);
+    border-radius: 4px;
+    font-style: italic;
+    color: var(--blockquote-text);
+}
+
+.post-content blockquote p {
+    margin-bottom: 0;
+}
+
+.post-content hr {
+    border: 0;
+    height: 1px;
+    background: var(--border-color-light);
+    margin: 3rem auto;
+}
+
+.post-content img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+body.dark-mode .post-content img {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Code Styling --- */
+
+.post-content code {
+    background-color: var(--code-bg);
+    color: var(--text-color);
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 85%;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.post-content pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border-color-light);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    overflow-x: auto;
+}
+
+.post-content pre code {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    border-radius: 0;
+}
+
 /* --- RESPONSIVE STYLES --- */
 
 /* Make images and embedded content responsive */
@@ -427,12 +576,19 @@ footer {
 
 /* Mobile screens (< 768px) */
 @media (max-width: 768px) {
+    nav {
+        width: 100%;
+        min-height: 3rem; /* Prevents the nav from collapsing */
+    }
+
     nav h1 {
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
         font-size: 1.25rem;
         margin: 0;
+        width: auto;
+        text-align: center;
     }
 
     .nav-toggle {
