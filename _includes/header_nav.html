@@ -12,14 +12,8 @@
             {%- assign about_url = "/about/index.ar.html" -%}
             {%- assign site_title = "مدونة صلاح" -%}
         {% endif %}
-
+        
         <h1><a href="{{ home_url }}">{{ site_title }}</a></h1>
-
-        {% if page.layout == 'post' %}
-            <button class="back-button" aria-label="Go back">
-                <span class="back-icon">←</span>
-            </button>
-        {% endif %}
         
         <!-- All nav items are now grouped together -->
         <div class="nav-links">

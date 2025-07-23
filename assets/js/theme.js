@@ -4,28 +4,6 @@
     const toggleIcon = themeToggle ? themeToggle.querySelector('.toggle-icon') : null;
     const giscusIframe = '.giscus-frame'; // Selector for Giscus iframe
 
-// --- Back Button Functionality ---
-    function goBack() {
-        if (document.referrer) {
-            // Go back to previous page if referrer exists
-            window.history.back();
-        } else {
-            // Fallback: go to homepage based on current language
-            const currentLang = document.documentElement.lang || 'en';
-            if (currentLang === 'ar') {
-                window.location.href = '/ar/';
-            } else {
-                window.location.href = '/';
-            }
-        }
-    }
-    
-    // Add click handler to back button
-    const backButton = document.querySelector('.back-button');
-    if (backButton) {
-        backButton.addEventListener('click', goBack);
-    }
-    // --- End of Back Button Functionality ---
 
     // --- New Nav Toggle Logic ---
     const navToggle = document.querySelector('.nav-toggle');
@@ -106,17 +84,5 @@
         }
     });
 
-    // Ensure Giscus gets updated after it loads, if the theme was set before it loaded
-    // This is a bit tricky as Giscus loads async. A MutationObserver or onload for iframe is complex.
-    // A simpler approach is to send the message shortly after page load, hoping Giscus is there.
-    // Or, if Giscus theme is set to 'preferred_color_scheme' in _config.yml, it might adapt automatically.
-    // Your current _config.yml Giscus theme is 'gruvbox_dark'.
-    // If you want Giscus to reflect the toggle, ensure the `updateGiscusTheme` call is effective.
-    // It is called in `setTheme`, which runs on page load.
-    // Add a slight delay if Giscus isn't ready immediately:
-    // setTimeout(() => {
-    //     const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
-    //     updateGiscusTheme(currentTheme);
-    // }, 1000); // Adjust delay if needed
 
 })(); 

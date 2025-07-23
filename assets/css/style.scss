@@ -59,6 +59,9 @@ body {
     color: var(--text-color);
     background-color: var(--body-bg);
     transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 body[dir="rtl"] {
@@ -88,6 +91,13 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
+}
+
+.nav-links {
+    display: flex;       
+    align-items: center;   
+    gap: 1.5rem;           
 }
 
 nav ul {
@@ -106,6 +116,7 @@ main {
     margin: 0 auto;
     padding: 2rem;
     background-color: var(--body-bg);
+    flex-grow: 1;
 }
 
 .hero {
@@ -140,9 +151,14 @@ footer {
 
 
 .post-preview {
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color-medium);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color-light);
+    
+    &:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
 }
 
 .post-preview h3 {
@@ -181,18 +197,6 @@ footer {
     color: var(--category-text);
 }
 
-.recent-posts .post-preview {
-    margin-bottom: 20px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color-light);
-}
-.recent-posts .post-preview:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-}
-.recent-posts .post-preview h4 a {
-    text-decoration: none;
-}
 
 /* Comments Section */
 .comments {
@@ -386,27 +390,6 @@ footer {
 }
 
 /* --- Header & Navigation --- */
-.back-button {
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-    color: var(--header-text);
-    font-size: 1.75rem;
-    line-height: 1;
-    position: absolute;
-    left: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 0.5em;
-    z-index: 1010; /* Above nav links */
-
-    body[dir="rtl"] & {
-        left: auto;
-        right: 1rem;
-        transform: translateY(-50%) rotate(180deg);
-    }
-}
-
 .nav-toggle {
     display: none; /* Hidden by default */
     background: transparent;
@@ -444,13 +427,24 @@ footer {
 
 /* Mobile screens (< 768px) */
 @media (max-width: 768px) {
+    nav h1 {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.25rem;
+        margin: 0;
+    }
+
     .nav-toggle {
         display: block;
         position: absolute;
         right: 1rem;
         top: 50%;
         transform: translateY(-50%);
-        body[dir="rtl"] & { right: auto; left: 1rem; }
+        html[dir="rtl"] & { 
+            right: auto;
+            left: 1rem;
+        }
     }
 
     .nav-links {
