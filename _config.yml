@@ -4,6 +4,7 @@ description: A place where I share my thoughts and expertise
 
 # Build settings
 markdown: kramdown
+future: true
 
 # URL settings
 baseurl: "" # Important for correct pathing with jekyll-polyglot relative_url

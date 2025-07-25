@@ -1,0 +1,60 @@
+// assets/css/_syntax-dark.scss
+// A dark theme for Rouge syntax highlighting.
+
+.highlight, .highlight .w {
+  color: #c9d1d9; // Default text
+  background-color: var(--code-bg); // Use the dark variable for consistency
+}
+.highlight .err {
+  color: #f85149;
+  background-color: #3e1a19;
+}
+.highlight .k, .highlight .kd, .highlight .kn, .highlight .kp, .highlight .kr, .highlight .kt, .highlight .kv {
+  color: #ff7b72; // Keywords
+}
+.highlight .nc, .highlight .no, .highlight .nd, .highlight .ne, .highlight .nf, .highlight .nl {
+  color: #d2a8ff; // Class, function, etc.
+}
+.highlight .s, .highlight .sa, .highlight .sb, .highlight .sc, .highlight .dl, .highlight .sd, .highlight .s2, .highlight .se, .highlight .sh, .highlight .si, .highlight .sx, .highlight .s1, .highlight .ss {
+  color: #a5d6ff; // Strings
+}
+.highlight .m, .highlight .mb, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .il, .highlight .mo, .highlight .mx {
+  color: #79c0ff; // Numbers
+}
+.highlight .c, .highlight .ch, .highlight .cd, .highlight .cm, .highlight .cp, .highlight .cpf, .highlight .c1, .highlight .cs {
+  color: #8b949e; // Comments
+}
+.highlight .na, .highlight .nv, .highlight .vc, .highlight .vg, .highlight .vi, .highlight .vm {
+  color: #79c0ff; // Variables
+}
+.highlight .o, .highlight .ow {
+  color: #ff7b72; // Operators
+}
+.highlight .nt {
+    color: #7ee787; // HTML tags
+}
+.highlight .gi {
+  color: #56d364;
+  background-color: #1a3420;
+}
+.highlight .gd {
+  color: #ff9da4;
+  background-color: #341a1d;
+}
+.highlight .gh, .highlight .gu {
+  color: #1f6feb;
+  font-weight: bold;
+}
+
+/* Copy button styling for dark mode */
+body.dark-mode .copy-code-button {
+    background-color: var(--code-bg);
+    border-color: var(--border-color-medium);
+    color: var(--text-color-muted);
+}
+
+body.dark-mode .copy-code-button:hover,
+body.dark-mode .copy-code-button:focus {
+    background-color: var(--header-bg);
+    color: var(--text-color);
+}
