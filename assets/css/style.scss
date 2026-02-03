@@ -757,6 +757,198 @@ body[dir="rtl"] .translation-notice {
 }
 
 /* ==========================================================================
+   Table of Contents (Outline)
+   ========================================================================== */
+.post-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+@media (min-width: 1100px) {
+    .post-container {
+        grid-template-columns: 1fr 220px;
+        max-width: 960px;
+    }
+}
+
+.toc {
+    display: none;
+}
+
+@media (min-width: 1100px) {
+    .toc {
+        display: block;
+        position: relative;
+        order: 2;
+    }
+
+    .toc-nav {
+        position: sticky;
+        top: 100px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .toc-toggle {
+        display: none;
+    }
+}
+
+.toc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.toc-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-color-muted);
+}
+
+.toc-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--text-color-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toc-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc-nav li {
+    margin-bottom: 0.5rem;
+}
+
+.toc-nav a {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-color-muted);
+    text-decoration: none;
+    padding: 0.25rem 0;
+    border-left: 2px solid transparent;
+    padding-left: 0.75rem;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    line-height: 1.4;
+}
+
+.toc-nav a:hover {
+    color: var(--text-color);
+}
+
+.toc-nav a.active {
+    color: var(--text-color-link);
+    border-left-color: var(--text-color-link);
+}
+
+.toc-h3 a {
+    padding-left: 1.5rem;
+    font-size: 0.8rem;
+}
+
+/* RTL TOC */
+body[dir="rtl"] .toc-nav a {
+    border-left: none;
+    border-right: 2px solid transparent;
+    padding-left: 0;
+    padding-right: 0.75rem;
+}
+
+body[dir="rtl"] .toc-nav a.active {
+    border-right-color: var(--text-color-link);
+}
+
+body[dir="rtl"] .toc-h3 a {
+    padding-left: 0;
+    padding-right: 1.5rem;
+}
+
+/* Mobile TOC - Floating button */
+@media (max-width: 1099px) {
+    .toc {
+        display: block;
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 50;
+    }
+
+    body[dir="rtl"] .toc {
+        right: auto;
+        left: 1.5rem;
+    }
+
+    .toc-header {
+        margin: 0;
+    }
+
+    .toc-title {
+        display: none;
+    }
+
+    .toc-toggle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: var(--header-bg);
+        border: 1px solid var(--border-color-light);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        color: var(--text-color);
+    }
+
+    body.dark-mode .toc-toggle {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .toc-nav {
+        display: none;
+        position: absolute;
+        bottom: 60px;
+        right: 0;
+        width: 250px;
+        max-height: 60vh;
+        overflow-y: auto;
+        background-color: var(--header-bg);
+        border: 1px solid var(--border-color-light);
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    body[dir="rtl"] .toc-nav {
+        right: auto;
+        left: 0;
+    }
+
+    body.dark-mode .toc-nav {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .toc.toc-open .toc-nav {
+        display: block;
+    }
+
+    .toc.toc-open .toc-toggle {
+        background-color: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
+}
+
+/* ==========================================================================
    Post Content Styling
    ========================================================================== */
 
@@ -764,6 +956,7 @@ body[dir="rtl"] .translation-notice {
     max-width: 720px;
     margin-left: auto;
     margin-right: auto;
+    order: 1;
 }
 
 /* --- Typography --- */
