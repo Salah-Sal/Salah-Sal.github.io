@@ -794,13 +794,22 @@ body[dir="rtl"] .translation-notice {
         color: var(--text-color-muted);
     }
 
-    .toc-nav ul {
+    .toc-nav {
+        display: block;
+    }
+
+    .toc-nav ul,
+    nav.toc-nav ul {
         list-style: none;
         padding: 0;
         margin: 0;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
     }
 
     .toc-nav li {
+        display: block;
         margin-bottom: 0.4rem;
     }
 
@@ -919,13 +928,18 @@ body[dir="rtl"] .translation-notice {
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
 
-    .toc-nav ul {
+    .toc-nav ul,
+    nav.toc-nav ul {
         list-style: none;
         padding: 0;
         margin: 0;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
     }
 
     .toc-nav li {
+        display: block;
         margin-bottom: 0.25rem;
     }
 
