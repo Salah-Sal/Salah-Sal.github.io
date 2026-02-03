@@ -3,27 +3,23 @@ layout: default
 title: "Home"
 lang: en
 ---
-<section class="hero">
-    <h2>Welcome to Salah's Blog</h2>
-    <p>I share my thoughts and expertise in technology here</p>
-</section>
+<div class="home-en">
+    <header>
+        <h1>Salah</h1>
+        <p>Technology, AI & Software Engineering</p>
+    </header>
 
-<section class="recent-posts">
-    <h3>Recent English Posts</h3>
-    {% for post in site.posts_en limit:3 %}
-      <article class="post-preview">
-        <h4><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h4>
-        <p class="post-meta">
-          <span class="post-date">{{ post.date | date_to_string }}</span>
-          {% if post.categories.size > 0 %}
-            <span class="post-categories">
-              Categories: {{ post.categories | join: ', ' }}
-            </span>
-          {% endif %}
-        </p>
-        <div class="post-excerpt">{{ post.excerpt }}</div>
-        <p class="read-more-link"><a href="{{ post.url | relative_url }}">Read more...</a></p>
-      </article>
-    {% endfor %}
-    <p><a href="/en/blog/">View all English posts →</a></p>
-</section>
+    <section class="recent-posts">
+        <h3>Recent Posts</h3>
+        {% for post in site.posts_en limit:3 %}
+            <article>
+                <time>{{ post.date | date: "%B %d, %Y" }}</time>
+                <h2><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h2>
+                <p>{{ post.excerpt | strip_html | truncatewords: 25 }}</p>
+            </article>
+        {% endfor %}
+        <nav>
+            <a href="/en/blog/">View all posts &rarr;</a>
+        </nav>
+    </section>
+</div>
