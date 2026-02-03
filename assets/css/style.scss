@@ -740,6 +740,12 @@ body[dir="rtl"] .translation-notice {
 .post-header {
     margin-bottom: 3rem;
     text-align: center;
+    position: static;
+    z-index: auto;
+    background: transparent;
+    backdrop-filter: none;
+    border-bottom: none;
+    padding: 0;
 }
 
 .post-title {
