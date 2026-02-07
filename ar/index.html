@@ -5,25 +5,11 @@ lang: ar
 ---
 
 <main class="home-ar">
-    <header>
-        <h1>مدونة صلاح</h1>
-        <p>مقالات في الذكاء الاصطناعي، هندسة البرمجيات، ومعالجة اللغات الطبيعية</p>
-    </header>
-
-    <section class="home-featured">
-        <div class="featured-card">
-            <span class="featured-label">دليل البيانات</span>
-            <h2><a href="/ar/datasets/">دليل البيانات العربية</a></h2>
-            <p>تقييمات شاملة لمجموعات البيانات العربية في معالجة اللغات الطبيعية — مع تحليل الجودة والعينات</p>
-            <a href="/ar/datasets/" class="featured-link">استعرض البيانات ←</a>
-        </div>
-    </section>
-
-    <section class="recent-posts">
-        <h3>أحدث المقالات</h3>
-        {% for post in site.posts_ar limit:4 %}
-            <article class="post-card">
-                <div class="post-card-content">
+    <div class="home-layout">
+        <section class="home-main">
+            <h3>أحدث المقالات</h3>
+            {% for post in site.posts_ar limit:5 %}
+                <article class="post-card">
                     <time>{{ post.date | date: "%d %B %Y" }}</time>
                     <h2><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
                     {% if post.categories.size > 0 %}
@@ -34,12 +20,26 @@ lang: ar
                         </div>
                     {% endif %}
                     <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
-                </div>
-            </article>
-        {% endfor %}
+                </article>
+            {% endfor %}
 
-        <nav class="all-posts-link">
-            <a href="/ar/blog/">جميع المقالات →</a>
-        </nav>
-    </section>
+            <nav class="all-posts-link">
+                <a href="/ar/blog/">جميع المقالات →</a>
+            </nav>
+        </section>
+
+        <aside class="home-sidebar">
+            <div class="sidebar-card sidebar-featured">
+                <span class="sidebar-label">دليل البيانات</span>
+                <h3><a href="/ar/datasets/">دليل البيانات العربية</a></h3>
+                <p>تقييمات شاملة لمجموعات البيانات العربية في معالجة اللغات الطبيعية</p>
+                <a href="/ar/datasets/" class="sidebar-link">استعرض البيانات ←</a>
+            </div>
+
+            <div class="sidebar-card">
+                <h4>عن المدونة</h4>
+                <p>مقالات في الذكاء الاصطناعي، هندسة البرمجيات، ومعالجة اللغات الطبيعية</p>
+            </div>
+        </aside>
+    </div>
 </main>
