@@ -61,7 +61,26 @@ This is the approach I actually built and validated. It works with any Docker in
 
 ### Step 1: Build the Docker Image
 
-Create a `Dockerfile`:
+You need two files — a `Dockerfile` and an `entrypoint.sh` that handles credentials securely.
+
+**entrypoint.sh** — writes credentials from env var to in-container tmpfs, then clears the env var before starting Claude:
+
+```bash
+#!/bin/bash
+CREDS_DIR="/home/assessor/.claude"
+mkdir -p "$CREDS_DIR"
+
+if [ -n "$CLAUDE_CREDS_JSON" ]; then
+    printf '%s' "$CLAUDE_CREDS_JSON" > "$CREDS_DIR/.credentials.json"
+    chmod 600 "$CREDS_DIR/.credentials.json"
+fi
+
+# Clear from environment before exec — prevents leaking to child processes
+unset CLAUDE_CREDS_JSON
+exec "$@"
+```
+
+**Dockerfile:**
 
 ```dockerfile
 FROM ubuntu:22.04
@@ -89,10 +108,13 @@ RUN useradd -m -s /bin/bash assessor
 RUN mkdir -p /input /output /home/assessor/.claude \
     && chown -R assessor:assessor /input /output /home/assessor/.claude
 
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 USER assessor
 WORKDIR /home/assessor
 
-ENTRYPOINT ["claude"]
+ENTRYPOINT ["entrypoint.sh", "claude"]
 CMD ["-p"]
 ```
 
@@ -110,30 +132,15 @@ This was the trickiest part. Claude Code on a Max/Pro plan authenticates via **O
 
 **What didn't work:** Setting `CLAUDE_CODE_OAUTH_TOKEN` as an environment variable. The container started but Claude printed "Execution error" with no output.
 
-**What works:** Extracting the full credentials JSON from the macOS Keychain and mounting it as a file inside the container.
+**What works:** Extracting the full credentials JSON from the macOS Keychain and passing it into the container via an environment variable. The entrypoint script writes it to the container's tmpfs filesystem (in-memory, never touches your host disk), then clears the env var before Claude starts.
 
-Extract your credentials:
+The credentials live in the macOS Keychain under the service name `Claude Code-credentials`:
 
 ```bash
-security find-generic-password -s "Claude Code-credentials" -w > /tmp/claude-creds.json
+security find-generic-password -s "Claude Code-credentials" -w
 ```
 
-This outputs a JSON object like:
-
-```json
-{
-  "claudeAiOauth": {
-    "accessToken": "sk-ant-oat01-...",
-    "refreshToken": "sk-ant-ort01-...",
-    "expiresAt": 1770468144504,
-    "subscriptionType": "max"
-  }
-}
-```
-
-You then mount this file into the container at `/home/assessor/.claude/.credentials.json`.
-
-**Security note:** This file contains your OAuth tokens. Delete the temp file after use and never commit it to git. The `:ro` flag ensures the container can only read it, not modify it.
+This outputs a JSON object containing your access token, refresh token, and subscription info. The entrypoint script handles writing this to the right location inside the container.
 
 ### Step 3: Prepare Input and Output Directories
 
@@ -149,40 +156,38 @@ cp /path/to/masader/datasets/*.json ~/sandbox-workspace/input/
 Here's the full command with all security flags:
 
 ```bash
-# Extract credentials (delete after use)
-security find-generic-password -s "Claude Code-credentials" -w > /tmp/claude-creds.json
-
 docker run --rm \
-  --read-only \
   --cap-drop=ALL \
   --security-opt=no-new-privileges \
-  --tmpfs /tmp \
-  --tmpfs /home/assessor/.cache \
-  --tmpfs /home/assessor/.config \
-  --tmpfs /home/assessor/.local \
-  --tmpfs /home/assessor/.npm \
   -v ~/sandbox-workspace/input:/input:ro \
   -v ~/sandbox-workspace/output:/output \
-  -v /tmp/claude-creds.json:/home/assessor/.claude/.credentials.json:ro \
+  -e CLAUDE_CREDS_JSON="$(security find-generic-password -s 'Claude Code-credentials' -w)" \
   claude-assessor -p --dangerously-skip-permissions \
   "Read /input/ajgt.json, load data samples via Python datasets library, \
    then write assessment JSON to /output/ajgt_assessment.json"
-
-# Clean up credentials
-rm /tmp/claude-creds.json
 ```
 
 What each security flag does:
 
 | Flag | Protection |
 |------|-----------|
-| `--read-only` | Root filesystem is read-only — can't modify system files |
 | `--cap-drop=ALL` | Drops all Linux capabilities (no privilege escalation) |
 | `--security-opt=no-new-privileges` | Prevents gaining new privileges via setuid/setgid |
-| `--tmpfs /tmp` | Writable temp space that exists only in memory |
 | `-v .../input:/input:ro` | Dataset files are read-only — Claude can't modify them |
 | `-v .../output:/output` | Only place Claude can write persistent files |
-| `-v ...credentials.json:...:ro` | Auth token is read-only |
+| `--rm` | Container is destroyed after exit — no leftover state |
+
+**How credentials flow — no file ever touches your host disk:**
+
+```
+macOS Keychain
+    → shell subcommand $(...) captures output in memory
+        → Docker passes it as env var CLAUDE_CREDS_JSON
+            → entrypoint.sh writes to container tmpfs (in-memory)
+                → unset CLAUDE_CREDS_JSON (cleared from environment)
+                    → exec claude (starts with clean environment)
+                        → container exits → tmpfs destroyed → credentials gone
+```
 
 ### Step 5: Verify It Works
 
@@ -199,7 +204,7 @@ From my actual test run, Claude:
 4. Fetched the HuggingFace page and GitHub repo
 5. Wrote a structured Arabic assessment JSON
 
-All inside an isolated container where the worst it could do is clutter `/tmp`.
+All inside an isolated container where the worst it could do is clutter its own filesystem.
 
 ---
 
@@ -213,10 +218,6 @@ For running all 580 datasets:
 
 INPUT_DIR="$HOME/sandbox-workspace/input"
 OUTPUT_DIR="$HOME/sandbox-workspace/output"
-CREDS="/tmp/claude-creds.json"
-
-# Extract credentials once
-security find-generic-password -s "Claude Code-credentials" -w > "$CREDS"
 
 TOTAL=$(ls "$INPUT_DIR"/*.json 2>/dev/null | wc -l | tr -d ' ')
 CURRENT=0
@@ -237,25 +238,17 @@ for DATASET_FILE in "$INPUT_DIR"/*.json; do
     echo "[$CURRENT/$TOTAL] Assessing: $DATASET_NAME"
 
     docker run --rm \
-      --read-only \
       --cap-drop=ALL \
       --security-opt=no-new-privileges \
-      --tmpfs /tmp \
-      --tmpfs /home/assessor/.cache \
-      --tmpfs /home/assessor/.config \
-      --tmpfs /home/assessor/.local \
-      --tmpfs /home/assessor/.npm \
       -v "$INPUT_DIR":/input:ro \
       -v "$OUTPUT_DIR":/output \
-      -v "$CREDS":/home/assessor/.claude/.credentials.json:ro \
+      -e CLAUDE_CREDS_JSON="$(security find-generic-password -s 'Claude Code-credentials' -w)" \
       claude-assessor -p --dangerously-skip-permissions \
       "اقرأ /input/${DATASET_NAME}.json ثم حمّل عينات من البيانات عبر بايثون ثم اكتب تقييم JSON إلى /output/${DATASET_NAME}_assessment.json. اكتب بالعربية. الهيكل: {الاسم, الاسم_الأصلي, درجة_الجودة (0-100), تقدير_الجودة (ممتاز|جيد|مقبول|ضعيف), الملخص, فحص_البيانات: {الطريقة_المستخدمة, عدد_العينات_المفحوصة, معاينة_العينات, مشاكل_مكتشفة}, نقاط_القوة, نقاط_الضعف, تفصيل_الجودة: {سهولة_الوصول, التوثيق, السلامة_الأخلاقية, الترخيص, قابلية_إعادة_الإنتاج, المراجعة_العلمية, جودة_البيانات}, تم_تحميل_البيانات}"
 
     sleep 2  # Rate limit pause
 done
 
-# Clean up credentials
-rm "$CREDS"
 echo "Done. $CURRENT datasets processed. Results in $OUTPUT_DIR"
 ```
 
@@ -282,10 +275,9 @@ ls -t ~/sandbox-workspace/output/*.json | head -1 | xargs cat | python3 -m json.
 
 | Scenario | Without Container | With Container |
 |----------|------------------|---------------|
-| Claude runs `rm -rf ~/Documents` | Your documents are deleted | Only container tmpfs affected; host untouched |
-| Claude runs `pip install malicious-pkg` | Installed on your system | Installed in tmpfs, gone when container exits |
+| Claude runs `rm -rf ~/Documents` | Your documents are deleted | Only container files affected; host untouched |
+| Claude runs `pip install malicious-pkg` | Installed on your system | Gone when container exits (`--rm`) |
 | Claude reads `~/.ssh/id_rsa` | Returns your private key | File doesn't exist in container |
-| Claude writes to `/etc/hosts` | Modifies your system | Blocked — root filesystem is read-only |
 | Claude runs `curl evil-site.com` | Request goes through | Goes through (use network policies to block) |
 | Process crashes | Orphaned processes on your system | Container exits cleanly; `--rm` removes it |
 
@@ -304,6 +296,71 @@ docker run --rm --network isolated-net \
 ```
 
 Or for selective access, use a proxy container that only allows specific domains (HuggingFace, GitHub, ArXiv, Anthropic API).
+
+---
+
+## Security Review: What We Found
+
+After building and testing this approach, I did a security audit. Here are the real risks and how they're mitigated.
+
+### Credential Handling
+
+**The naive approach is dangerous.** Writing credentials to a temp file:
+
+```bash
+# DON'T DO THIS
+security find-generic-password -s "Claude Code-credentials" -w > /tmp/creds.json
+docker run ... -v /tmp/creds.json:/home/assessor/.claude/.credentials.json:ro ...
+rm /tmp/creds.json
+```
+
+Problems with this:
+- Any process on your machine can read `/tmp/creds.json` while it exists
+- If the script crashes before `rm`, the file stays forever
+- macOS Spotlight may index it
+- Time Machine may back it up
+- The file contains your **refresh token** — anyone who copies it can impersonate your Max account
+
+**The entrypoint approach solves this.** Credentials flow through an env var (in-memory) into the container's tmpfs (in-memory). Nothing ever hits your host disk. The entrypoint clears the env var before starting Claude, so even `docker inspect` on the running container won't show it.
+
+### `trust_remote_code=True`
+
+The prompt tells Claude to load HuggingFace datasets with `trust_remote_code=True`. This downloads and **executes arbitrary Python code** from dataset repositories. A malicious dataset author could put anything in their loading script.
+
+Inside the container, this code can:
+- Access the network (could exfiltrate data)
+- Read the credentials file from tmpfs
+- Write to `/output`
+
+**Mitigation:** The container is disposable (`--rm`), has no capabilities (`--cap-drop=ALL`), and can't escalate privileges. Adding network restrictions (see above) would close the exfiltration vector.
+
+### Session Transcripts
+
+Claude Code writes session transcripts to `~/.claude/projects/`. If you run `security find-generic-password` in a Claude Code session (like I did while developing this), **your OAuth tokens get logged in the transcript file on disk**.
+
+The transcript files are only readable by your user (`-rw-------`), but they persist on disk indefinitely.
+
+**Mitigation:** After working with credentials in a Claude Code session, rotate your tokens:
+
+```bash
+claude /logout
+claude /login
+```
+
+This invalidates the old tokens that may be logged in session transcripts. In the batch processing script, credentials are only handled in bash (not inside a Claude Code session), so this risk doesn't apply to the production workflow.
+
+### What's Not Protected
+
+| Risk | Status |
+|------|--------|
+| Network exfiltration | **Open** unless you add network restrictions |
+| Malicious dataset loading scripts | **Partially mitigated** — sandboxed but has network access |
+| Output directory manipulation | **Open** — Claude can write anything to `/output` |
+| API rate limit exhaustion | **Open** — `sleep 2` helps but doesn't guarantee |
+
+### Overall Assessment
+
+The Docker container approach is **significantly safer** than running bare `claude -p --dangerously-skip-permissions` on the host. The main remaining gap is unrestricted network access — adding a domain allowlist would close the last meaningful attack vector.
 
 ---
 
@@ -366,9 +423,9 @@ Sandboxes persist until removed — installed packages, downloaded files, and co
 | Aspect | Docker Sandboxes | Custom Container |
 |--------|-----------------|-----------------|
 | **Isolation** | MicroVM (own kernel) | Container (shared kernel) |
-| **Setup** | One command | Build Dockerfile |
+| **Setup** | One command | Build Dockerfile + entrypoint |
 | **Network policies** | Built-in CLI | Manual proxy/iptables |
-| **Auth** | Auto-inherits from host | Mount credentials file |
+| **Auth** | Auto-inherits from host | Env var + entrypoint to tmpfs |
 | **Requires** | Docker Desktop 4.58+ | Any Docker version |
 | **Claude Code** | Pre-installed | Installed in image |
 | **Persistence** | Survives restarts | Destroyed on exit (`--rm`) |
@@ -377,16 +434,15 @@ Sandboxes persist until removed — installed packages, downloaded files, and co
 
 ## Tips and Gotchas
 
-### 1. Max Plan Auth Requires Credential File Mount
+### 1. Max Plan Auth Needs the Full Credentials JSON
 
-The `CLAUDE_CODE_OAUTH_TOKEN` environment variable alone is not sufficient. You must mount the full credentials JSON file extracted from the macOS Keychain:
+The `CLAUDE_CODE_OAUTH_TOKEN` environment variable alone is not sufficient. You need the full JSON object from the macOS Keychain, passed through the entrypoint:
 
 ```bash
-security find-generic-password -s "Claude Code-credentials" -w > /tmp/creds.json
-# Mount as: -v /tmp/creds.json:/home/assessor/.claude/.credentials.json:ro
+-e CLAUDE_CREDS_JSON="$(security find-generic-password -s 'Claude Code-credentials' -w)"
 ```
 
-If you have an API key instead, use the environment variable:
+If you have an API key instead, it's simpler:
 ```bash
 -e ANTHROPIC_API_KEY="sk-ant-api03-..."
 ```
@@ -399,17 +455,9 @@ If `ANTHROPIC_API_KEY` is set in your environment, Claude Code uses pay-as-you-g
 echo $ANTHROPIC_API_KEY  # Should be empty
 ```
 
-### 3. tmpfs Mounts Are Essential for Read-Only Mode
+### 3. `--read-only` Breaks Claude Code
 
-With `--read-only`, the container's root filesystem is immutable. But Claude Code and Python need writable directories for caches, configs, and temp files. The `--tmpfs` flags provide in-memory writable space that disappears when the container exits:
-
-```bash
---tmpfs /tmp
---tmpfs /home/assessor/.cache
---tmpfs /home/assessor/.config
---tmpfs /home/assessor/.local
---tmpfs /home/assessor/.npm
-```
+During testing, I found that `--read-only` (read-only root filesystem) prevents Claude Code from functioning even with extensive `--tmpfs` mounts. Claude Code needs writable paths beyond what I could identify. Drop `--read-only` — the container is already disposable and isolated.
 
 ### 4. Each Container Is Fully Independent
 
@@ -419,7 +467,18 @@ Unlike Docker Sandboxes which persist, containers with `--rm` are destroyed afte
 
 When processing 580 datasets sequentially, Claude makes ~5,000+ API calls. The `sleep 2` between datasets prevents hitting rate limits. For Max plan users, the rate limit tier is generous, but continuous heavy usage may still trigger throttling.
 
-### 6. Verify Claude Actually Loaded Data
+### 6. Rotate Tokens After Development
+
+If you ran `security find-generic-password` inside a Claude Code session while testing, your tokens are logged in the session transcript at `~/.claude/projects/`. Rotate them:
+
+```bash
+claude /logout
+claude /login
+```
+
+This doesn't affect the batch script (which runs credentials through bash, not a Claude session).
+
+### 7. Verify Claude Actually Loaded Data
 
 The assessment JSON includes `"تم_تحميل_البيانات": true/false` to indicate whether real data was loaded. Cross-check by looking at `"عدد_العينات_المفحوصة"` — if it matches the actual dataset size, Claude loaded the data. If it says `0` or `metadata_only`, the HuggingFace link was broken or the library couldn't load it.
 
