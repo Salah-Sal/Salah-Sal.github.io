@@ -3,23 +3,34 @@ layout: default
 title: "Home"
 lang: en
 ---
-<div class="home-en">
+
+<main class="home-en">
     <header>
-        <h1>Salah</h1>
-        <p>Technology, AI & Software Engineering</p>
+        <h1>Salah's Blog</h1>
+        <p>Writing about AI, software engineering, and natural language processing</p>
     </header>
 
     <section class="recent-posts">
         <h3>Recent Posts</h3>
         {% for post in site.posts_en limit:3 %}
-            <article>
-                <time>{{ post.date | date: "%B %d, %Y" }}</time>
-                <h2><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h2>
-                <p>{{ post.excerpt | strip_html | truncatewords: 25 }}</p>
+            <article class="post-card">
+                <div class="post-card-content">
+                    <time>{{ post.date | date: "%B %d, %Y" }}</time>
+                    <h2><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h2>
+                    {% if post.categories.size > 0 %}
+                        <div class="post-categories">
+                            {% for cat in post.categories limit:2 %}
+                                <span>{{ cat }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <p>{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
+                </div>
             </article>
         {% endfor %}
-        <nav>
+
+        <nav class="all-posts-link">
             <a href="/en/blog/">View all posts &rarr;</a>
         </nav>
     </section>
-</div>
+</main>
