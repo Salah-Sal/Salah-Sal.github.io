@@ -9,7 +9,8 @@ lang: en
     </header>
 
     <section class="posts-list">
-        {% for post in site.posts_en %}
+        {% assign sorted_posts = site.posts_en | sort: "date" | reverse %}
+        {% for post in sorted_posts %}
             <article>
                 <time>{{ post.date | date: "%B %d, %Y" }}</time>
                 <h2><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h2>

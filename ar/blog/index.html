@@ -12,7 +12,8 @@ lang: ar
     </header>
 
     <section class="posts-list">
-        {% for post in site.posts_ar %}
+        {% assign sorted_posts = site.posts_ar | sort: "date" | reverse %}
+        {% for post in sorted_posts %}
             <article>
                 <time>
                     {{ post.date | date: "%d %B %Y" }}

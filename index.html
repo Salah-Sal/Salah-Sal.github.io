@@ -8,7 +8,8 @@ lang: en
     <div class="home-layout">
         <section class="home-main">
             <h3>Recent Posts</h3>
-            {% for post in site.posts_en limit:5 %}
+            {% assign sorted_posts = site.posts_en | sort: "date" | reverse %}
+            {% for post in sorted_posts limit:5 %}
                 <article class="post-item">
                     <div class="post-item-header">
                         <time>{{ post.date | date: "%B %d, %Y" }}</time>
