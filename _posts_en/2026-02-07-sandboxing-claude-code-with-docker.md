@@ -75,8 +75,9 @@ if [ -n "$CLAUDE_CREDS_JSON" ]; then
     chmod 600 "$CREDS_DIR/.credentials.json"
 fi
 
-# Clear from environment before exec — prevents leaking to child processes
+# Clear secrets from environment before exec — prevents leaking to child processes
 unset CLAUDE_CREDS_JSON
+unset ANTHROPIC_API_KEY
 exec "$@"
 ```
 
