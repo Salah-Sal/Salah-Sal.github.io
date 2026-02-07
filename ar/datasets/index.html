@@ -62,6 +62,38 @@ lang: ar
     <div class="datasets-empty" id="datasets-empty" style="display:none;">
         <p>لم يتم العثور على نتائج تطابق بحثك.</p>
     </div>
+
+    <footer class="datasets-credits">
+        <h3>حول هذا الدليل</h3>
+        <p>
+            <strong>البيانات الوصفية</strong> (الأسماء، الروابط، المهام، السنوات) مصدرها
+            <a href="https://arbml.github.io/masader/" target="_blank" rel="noopener">فهرس مَصَادِر</a>
+            — أكبر فهرس عام لمجموعات بيانات معالجة اللغة العربية، يضم أكثر من 600 مجموعة بيانات بمساهمة أكثر من 40 باحثاً.
+        </p>
+        <p>
+            <strong>تقييمات الجودة</strong> (الدرجات، نقاط القوة والضعف، المراجعات التفصيلية) هي عمل أصلي
+            تم إنجازه باستخدام نظام تقييم آلي مبني على Claude من Anthropic داخل حاويات Docker معزولة،
+            حيث فُحصت مئات العينات من كل مجموعة بيانات مع تحليل إحصائي شامل.
+        </p>
+        <details class="datasets-citation">
+            <summary>الاستشهاد بفهرس مَصَادِر</summary>
+            <pre dir="ltr"><code>@misc{alyafeai2021masader,
+  title={Masader: Metadata Sourcing for Arabic Text and Speech Data Resources},
+  author={Zaid Alyafeai and Maraim Masoud and Mustafa Ghaleb and Maged S. Al-shaibani},
+  year={2021},
+  eprint={2110.06744},
+  archivePrefix={arXiv},
+  primaryClass={cs.CL}
+}
+
+@article{altaher2022masader,
+  title={Masader Plus: A New Interface for Exploring +500 Arabic NLP Datasets},
+  author={Altaher, Yousef and Fadel, Ali and Alotaibi, Mazen and others},
+  journal={arXiv preprint arXiv:2208.00932},
+  year={2022}
+}</code></pre>
+        </details>
+    </footer>
 </main>
 
 <div class="dataset-modal-overlay" id="modal-overlay" style="display:none;">
