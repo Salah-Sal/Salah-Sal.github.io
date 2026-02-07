@@ -11,57 +11,25 @@ I needed Claude Code to autonomously assess 580 Arabic NLP datasets. For each on
 
 The assessments were excellent. But I had no way to guarantee Claude wouldn't accidentally `rm -rf` something, install a rogue package, or exfiltrate data through an unexpected URL. I needed full isolation.
 
-Docker Sandboxes solve this. They're purpose-built by Docker and Anthropic to run Claude Code unsupervised in a microVM. Here's exactly how I set it up.
+This article covers two approaches: **Docker Sandboxes** (the official microVM solution from Docker + Anthropic) and **custom Docker containers** (what I actually used, since Docker Sandboxes requires Docker Desktop 4.58+ with the sandbox plugin enabled). Both achieve the same goal — running Claude Code in a locked-down environment where it can't touch your real system.
 
 ---
 
-## What Are Docker Sandboxes?
+## Two Approaches to Isolation
 
-Docker Sandboxes are **lightweight microVMs** — not containers. Each sandbox gets:
+### Option A: Docker Sandboxes (Official MicroVM Solution)
 
-- Its own **isolated filesystem** (can't touch your host files)
-- A **private Docker daemon** (can't access your host's containers)
-- **Configurable network policies** (allowlist/denylist specific domains)
-- **Bidirectional file sync** only for the workspace directory you mount
-- Claude Code runs with `--dangerously-skip-permissions` **by default** because the sandbox itself is the safety boundary
+Docker Sandboxes are **lightweight microVMs** purpose-built by Docker and Anthropic for AI agents. Each sandbox gets its own kernel, filesystem, Docker daemon, and configurable network policies. They're the ideal solution if your Docker Desktop version supports them (4.58+).
 
-They don't appear in `docker ps`. You manage them with `docker sandbox` commands.
+### Option B: Custom Docker Containers (What I Actually Used)
 
-**Key difference from containers:** a container shares the host kernel and can escape under certain conditions. A microVM has its own kernel — the isolation boundary is hardware-level.
-
----
-
-## Prerequisites
-
-- **Docker Desktop 4.58+** (macOS or Windows)
-- **Claude API key** set as a global environment variable
-- Your dataset files on disk
-
-### Install Docker Desktop
-
-If you don't have Docker Desktop, download it from [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/). After installation, verify the version:
-
-```bash
-docker --version
-# Docker version 28.x.x or later
-```
-
-### Set Your API Key Globally
-
-This is critical — Docker Sandboxes inherit environment variables from your shell, but the Docker daemon reads them at startup. You must set the key in your shell profile, not inline:
-
-```bash
-echo 'export ANTHROPIC_API_KEY="sk-ant-api03-your-key-here"' >> ~/.zshrc
-source ~/.zshrc
-```
-
-Then **restart Docker Desktop** so the daemon picks up the new variable.
+If `docker sandbox` isn't available on your system, you can build a custom Docker image with Claude Code, Python, and the datasets library. You get the same filesystem and network isolation using standard Docker security flags. This is the approach I validated end-to-end and will detail first.
 
 ---
 
 ## The Problem: What Does "Unsupervised" Actually Mean?
 
-Here's what a single dataset assessment looks like when Claude Code runs it. These are the actual tool calls from one of our test runs on the AJGT Arabic sentiment dataset:
+Here's what a single dataset assessment looks like when Claude Code runs it. These are the **actual tool calls** I extracted from Claude Code's session transcripts (stored at `~/.claude/projects/`):
 
 | Step | Tool | What Claude Did |
 |------|------|----------------|
@@ -77,51 +45,284 @@ Here's what a single dataset assessment looks like when Claude Code runs it. The
 
 That's **9 tool calls** for one dataset. Multiply by 580 datasets and you're looking at ~5,000+ autonomous actions: bash commands, file writes, web requests, Python execution with `trust_remote_code=True`.
 
-Without sandboxing, `--dangerously-skip-permissions` means Claude can do anything your user account can do. With sandboxing, Claude can do anything — but only inside an isolated microVM that can't touch your real system.
+Without sandboxing, `--dangerously-skip-permissions` means Claude can do anything your user account can do. With sandboxing, Claude can do anything — but only inside an isolated container that can't touch your real system.
 
 ---
 
-## Step 1: Create the Sandbox
+## Custom Docker Container Approach (Tested & Validated)
 
-First, create a workspace directory with your input data and an output folder:
+This is the approach I actually built and validated. It works with any Docker installation and any Claude Code authentication method.
+
+### Prerequisites
+
+- **Docker Desktop** (any recent version — I used 28.4.0)
+- **Claude Code subscription** (Max/Pro plan) or an API key
+- Your dataset files on disk
+
+### Step 1: Build the Docker Image
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# System deps
+RUN apt-get update && apt-get install -y \
+    curl git python3 python3-pip jq ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20 (needed for Claude Code)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Claude Code
+RUN npm install -g @anthropic-ai/claude-code
+
+# Install Python data tools
+RUN pip3 install --no-cache-dir datasets huggingface-hub
+
+# Create non-root user
+RUN useradd -m -s /bin/bash assessor
+RUN mkdir -p /input /output /home/assessor/.claude \
+    && chown -R assessor:assessor /input /output /home/assessor/.claude
+
+USER assessor
+WORKDIR /home/assessor
+
+ENTRYPOINT ["claude"]
+CMD ["-p"]
+```
+
+Build it:
+
+```bash
+docker build -t claude-assessor .
+```
+
+The image is ~1.5GB and includes Ubuntu, Node.js, Claude Code, Python 3, and the HuggingFace datasets library.
+
+### Step 2: Authentication — The Key Discovery
+
+This was the trickiest part. Claude Code on a Max/Pro plan authenticates via **OAuth tokens stored in the macOS Keychain**, not an API key. You can't just pass `ANTHROPIC_API_KEY` — it doesn't exist.
+
+**What didn't work:** Setting `CLAUDE_CODE_OAUTH_TOKEN` as an environment variable. The container started but Claude printed "Execution error" with no output.
+
+**What works:** Extracting the full credentials JSON from the macOS Keychain and mounting it as a file inside the container.
+
+Extract your credentials:
+
+```bash
+security find-generic-password -s "Claude Code-credentials" -w > /tmp/claude-creds.json
+```
+
+This outputs a JSON object like:
+
+```json
+{
+  "claudeAiOauth": {
+    "accessToken": "sk-ant-oat01-...",
+    "refreshToken": "sk-ant-ort01-...",
+    "expiresAt": 1770468144504,
+    "subscriptionType": "max"
+  }
+}
+```
+
+You then mount this file into the container at `/home/assessor/.claude/.credentials.json`.
+
+**Security note:** This file contains your OAuth tokens. Delete the temp file after use and never commit it to git. The `:ro` flag ensures the container can only read it, not modify it.
+
+### Step 3: Prepare Input and Output Directories
 
 ```bash
 mkdir -p ~/sandbox-workspace/input ~/sandbox-workspace/output
-```
 
-Copy your dataset files into the input directory:
-
-```bash
+# Copy your dataset files
 cp /path/to/masader/datasets/*.json ~/sandbox-workspace/input/
 ```
 
-Now create and launch the sandbox:
+### Step 4: Run the Container
+
+Here's the full command with all security flags:
 
 ```bash
-docker sandbox run claude ~/sandbox-workspace
+# Extract credentials (delete after use)
+security find-generic-password -s "Claude Code-credentials" -w > /tmp/claude-creds.json
+
+docker run --rm \
+  --read-only \
+  --cap-drop=ALL \
+  --security-opt=no-new-privileges \
+  --tmpfs /tmp \
+  --tmpfs /home/assessor/.cache \
+  --tmpfs /home/assessor/.config \
+  --tmpfs /home/assessor/.local \
+  --tmpfs /home/assessor/.npm \
+  -v ~/sandbox-workspace/input:/input:ro \
+  -v ~/sandbox-workspace/output:/output \
+  -v /tmp/claude-creds.json:/home/assessor/.claude/.credentials.json:ro \
+  claude-assessor -p --dangerously-skip-permissions \
+  "Read /input/ajgt.json, load data samples via Python datasets library, \
+   then write assessment JSON to /output/ajgt_assessment.json"
+
+# Clean up credentials
+rm /tmp/claude-creds.json
 ```
 
-This does several things:
-1. Spins up a microVM with Ubuntu, Node.js, Python 3, Git, and Claude Code pre-installed
-2. Syncs `~/sandbox-workspace` into the sandbox at the same absolute path
-3. Drops you into a Claude Code session inside the sandbox
+What each security flag does:
 
-The first run takes a minute to pull the base image. Subsequent runs start in seconds.
+| Flag | Protection |
+|------|-----------|
+| `--read-only` | Root filesystem is read-only — can't modify system files |
+| `--cap-drop=ALL` | Drops all Linux capabilities (no privilege escalation) |
+| `--security-opt=no-new-privileges` | Prevents gaining new privileges via setuid/setgid |
+| `--tmpfs /tmp` | Writable temp space that exists only in memory |
+| `-v .../input:/input:ro` | Dataset files are read-only — Claude can't modify them |
+| `-v .../output:/output` | Only place Claude can write persistent files |
+| `-v ...credentials.json:...:ro` | Auth token is read-only |
+
+### Step 5: Verify It Works
+
+Check the output:
+
+```bash
+cat ~/sandbox-workspace/output/ajgt_assessment.json | python3 -m json.tool
+```
+
+From my actual test run, Claude:
+1. Read the metadata JSON
+2. Ran `python3` to load all 1,800 samples via the `datasets` library
+3. Computed statistics (duplicates, distribution, text lengths)
+4. Fetched the HuggingFace page and GitHub repo
+5. Wrote a structured Arabic assessment JSON
+
+All inside an isolated container where the worst it could do is clutter `/tmp`.
 
 ---
 
-## Step 2: Lock Down the Network
+## Batch Processing Script
 
-By default, sandboxes allow all outbound traffic. For our use case, Claude only needs to reach:
+For running all 580 datasets:
 
-- **api.anthropic.com** — Claude API calls
-- **huggingface.co** and its CDN — dataset downloads and page fetches
-- **github.com** and **raw.githubusercontent.com** — dataset repos
-- **pypi.org** and **files.pythonhosted.org** — Python package installs
-- **arxiv.org** — research papers
-- **semanticscholar.org** — paper metadata
+```bash
+#!/bin/bash
+# assess_all.sh
 
-Lock it down with a denylist policy (block everything, allow only what's needed):
+INPUT_DIR="$HOME/sandbox-workspace/input"
+OUTPUT_DIR="$HOME/sandbox-workspace/output"
+CREDS="/tmp/claude-creds.json"
+
+# Extract credentials once
+security find-generic-password -s "Claude Code-credentials" -w > "$CREDS"
+
+TOTAL=$(ls "$INPUT_DIR"/*.json 2>/dev/null | wc -l | tr -d ' ')
+CURRENT=0
+
+echo "Starting assessment of $TOTAL datasets"
+
+for DATASET_FILE in "$INPUT_DIR"/*.json; do
+    DATASET_NAME=$(basename "$DATASET_FILE" .json)
+    OUTPUT_FILE="$OUTPUT_DIR/${DATASET_NAME}_assessment.json"
+    CURRENT=$((CURRENT + 1))
+
+    # Skip if already assessed (resume support)
+    if [ -f "$OUTPUT_FILE" ]; then
+        echo "[$CURRENT/$TOTAL] Skipping (exists): $DATASET_NAME"
+        continue
+    fi
+
+    echo "[$CURRENT/$TOTAL] Assessing: $DATASET_NAME"
+
+    docker run --rm \
+      --read-only \
+      --cap-drop=ALL \
+      --security-opt=no-new-privileges \
+      --tmpfs /tmp \
+      --tmpfs /home/assessor/.cache \
+      --tmpfs /home/assessor/.config \
+      --tmpfs /home/assessor/.local \
+      --tmpfs /home/assessor/.npm \
+      -v "$INPUT_DIR":/input:ro \
+      -v "$OUTPUT_DIR":/output \
+      -v "$CREDS":/home/assessor/.claude/.credentials.json:ro \
+      claude-assessor -p --dangerously-skip-permissions \
+      "اقرأ /input/${DATASET_NAME}.json ثم حمّل عينات من البيانات عبر بايثون ثم اكتب تقييم JSON إلى /output/${DATASET_NAME}_assessment.json. اكتب بالعربية. الهيكل: {الاسم, الاسم_الأصلي, درجة_الجودة (0-100), تقدير_الجودة (ممتاز|جيد|مقبول|ضعيف), الملخص, فحص_البيانات: {الطريقة_المستخدمة, عدد_العينات_المفحوصة, معاينة_العينات, مشاكل_مكتشفة}, نقاط_القوة, نقاط_الضعف, تفصيل_الجودة: {سهولة_الوصول, التوثيق, السلامة_الأخلاقية, الترخيص, قابلية_إعادة_الإنتاج, المراجعة_العلمية, جودة_البيانات}, تم_تحميل_البيانات}"
+
+    sleep 2  # Rate limit pause
+done
+
+# Clean up credentials
+rm "$CREDS"
+echo "Done. $CURRENT datasets processed. Results in $OUTPUT_DIR"
+```
+
+### Resume Support
+
+The `if [ -f "$OUTPUT_FILE" ]` check is critical. If the process crashes at dataset 247, restart the script and it picks up at 248. Each dataset runs in its own container — no shared state to corrupt.
+
+### Monitoring Progress
+
+```bash
+# Count completed assessments
+ls ~/sandbox-workspace/output/*_assessment.json | wc -l
+
+# Watch in real-time
+watch -n 5 'ls ~/sandbox-workspace/output/*_assessment.json | wc -l'
+
+# Check the latest assessment
+ls -t ~/sandbox-workspace/output/*.json | head -1 | xargs cat | python3 -m json.tool
+```
+
+---
+
+## What the Container Actually Prevents
+
+| Scenario | Without Container | With Container |
+|----------|------------------|---------------|
+| Claude runs `rm -rf ~/Documents` | Your documents are deleted | Only container tmpfs affected; host untouched |
+| Claude runs `pip install malicious-pkg` | Installed on your system | Installed in tmpfs, gone when container exits |
+| Claude reads `~/.ssh/id_rsa` | Returns your private key | File doesn't exist in container |
+| Claude writes to `/etc/hosts` | Modifies your system | Blocked — root filesystem is read-only |
+| Claude runs `curl evil-site.com` | Request goes through | Goes through (use network policies to block) |
+| Process crashes | Orphaned processes on your system | Container exits cleanly; `--rm` removes it |
+
+### Adding Network Restrictions
+
+For tighter control, restrict outbound network access:
+
+```bash
+# Create a custom network with no internet
+docker network create --internal isolated-net
+
+# Run with restricted network
+docker run --rm --network isolated-net \
+  ... \
+  claude-assessor -p "..."
+```
+
+Or for selective access, use a proxy container that only allows specific domains (HuggingFace, GitHub, ArXiv, Anthropic API).
+
+---
+
+## Docker Sandboxes Approach (Official MicroVM Solution)
+
+If your Docker Desktop supports `docker sandbox` (version 4.58+ with the plugin enabled), you get an even stronger isolation boundary — a full microVM instead of a container.
+
+### Quick Setup
+
+```bash
+# Set API key or ensure OAuth credentials are available
+docker sandbox run claude ~/sandbox-workspace
+```
+
+This spins up a microVM with Claude Code pre-installed and `--dangerously-skip-permissions` enabled by default.
+
+### Network Policies
+
+Docker Sandboxes have built-in network policy management:
 
 ```bash
 docker sandbox network proxy my-sandbox \
@@ -131,7 +332,6 @@ docker sandbox network proxy my-sandbox \
   --allow-host huggingface.co \
   --allow-host "*.huggingface.co" \
   --allow-host "*.hf.co" \
-  --allow-host cdn-lfs.huggingface.co \
   --allow-host github.com \
   --allow-host "*.github.com" \
   --allow-host "*.githubusercontent.com" \
@@ -139,331 +339,132 @@ docker sandbox network proxy my-sandbox \
   --allow-host "*.pypi.org" \
   --allow-host files.pythonhosted.org \
   --allow-host arxiv.org \
-  --allow-host "*.arxiv.org" \
-  --allow-host semanticscholar.org \
-  --allow-host "*.semanticscholar.org" \
-  --allow-host "*.researchgate.net"
+  --allow-host "*.arxiv.org"
 ```
-
-### How Network Policies Work
-
-The proxy intercepts all HTTP/HTTPS traffic inside the sandbox. Non-HTTP protocols are blocked entirely.
 
 **Domain matching rules:**
 - `example.com` matches only `example.com`, **not** `sub.example.com`
 - `*.example.com` matches subdomains, **not** the root domain
 - To allow both, specify both patterns
 
-**Default blocked CIDRs** (always active):
-- `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16` — private networks
-- `127.0.0.0/8` — localhost
-- `169.254.0.0/16` — link-local
+**Default blocked CIDRs** (always active): private networks (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), localhost (`127.0.0.0/8`), link-local (`169.254.0.0/16`).
 
-This means even if Claude somehow resolved an internal IP, the request would be blocked.
-
-### Monitoring Network Activity
-
-Watch what Claude is actually requesting in real-time:
+### Sandbox Lifecycle
 
 ```bash
-docker sandbox network log
+docker sandbox ls                     # List all sandboxes
+docker sandbox run my-sandbox         # Reconnect to existing
+docker sandbox exec -it my-sandbox bash  # Open shell inside
+docker sandbox network log            # Watch network activity
+docker sandbox rm my-sandbox          # Remove when done
 ```
 
-This shows every allowed and blocked request — useful for debugging if a dataset fetch fails.
-
----
-
-## Step 3: Install Python Dependencies
-
-The sandbox comes with Python 3, but you'll need the HuggingFace datasets library. Open a shell inside the sandbox:
-
-```bash
-docker sandbox exec -it my-sandbox bash
-```
-
-Then install:
-
-```bash
-pip install datasets huggingface-hub
-```
-
-These packages persist — the sandbox retains all installed packages until you `docker sandbox rm` it.
-
----
-
-## Step 4: Create the Batch Processing Script
-
-Inside the sandbox, create the script that loops through datasets and calls `claude -p` for each one:
-
-```bash
-#!/bin/bash
-# assess_datasets.sh — Run inside Docker Sandbox
-
-INPUT_DIR="$HOME/sandbox-workspace/input"
-OUTPUT_DIR="$HOME/sandbox-workspace/output"
-LOG_FILE="$OUTPUT_DIR/progress.log"
-
-# Count total files
-TOTAL=$(ls "$INPUT_DIR"/*.json 2>/dev/null | wc -l)
-CURRENT=0
-
-echo "Starting assessment of $TOTAL datasets" | tee "$LOG_FILE"
-echo "$(date): Begin" >> "$LOG_FILE"
-
-for DATASET_FILE in "$INPUT_DIR"/*.json; do
-    DATASET_NAME=$(basename "$DATASET_FILE" .json)
-    OUTPUT_FILE="$OUTPUT_DIR/${DATASET_NAME}_assessment.json"
-
-    CURRENT=$((CURRENT + 1))
-
-    # Skip if already assessed
-    if [ -f "$OUTPUT_FILE" ]; then
-        echo "[$CURRENT/$TOTAL] Skipping (exists): $DATASET_NAME"
-        continue
-    fi
-
-    echo "[$CURRENT/$TOTAL] Assessing: $DATASET_NAME"
-    echo "$(date): [$CURRENT/$TOTAL] $DATASET_NAME" >> "$LOG_FILE"
-
-    claude -p \
-      "أنت مقيّم متخصص في مجموعات بيانات معالجة اللغة العربية. اكتب كل شيء بالعربية.
-
-الخطوة ١: اقرأ ملف البيانات الوصفية: $DATASET_FILE
-
-الخطوة ٢: حاول تحميل عينات حقيقية من البيانات:
-  - إذا يوجد رابط HuggingFace، استخدم:
-    python3 -c \"from datasets import load_dataset; ds = load_dataset('<id>', split='train', streaming=True, trust_remote_code=True); [print(row) for i, row in enumerate(ds) if i < 10]\"
-  - إذا فشل، جرب WebFetch على صفحة HuggingFace
-  - إذا يوجد رابط GitHub، حاول قراءة الملفات الخام
-
-الخطوة ٣: افتح رابط الورقة البحثية لفهم المنهجية.
-
-الخطوة ٤: بناءً على ما رأيته فعلياً، قيّم الجودة واكتب JSON إلى: $OUTPUT_FILE
-
-هيكل JSON:
-{
-  \"الاسم\": \"<اسم>\",
-  \"الاسم_الأصلي\": \"<name>\",
-  \"درجة_الجودة\": <0-100>,
-  \"تقدير_الجودة\": \"<ممتاز|جيد|مقبول|ضعيف>\",
-  \"الملخص\": \"<3-5 جمل بالعربية>\",
-  \"فحص_البيانات\": {
-    \"الطريقة_المستخدمة\": \"<datasets_lib|hf_viewer|github_raw|metadata_only>\",
-    \"عدد_العينات_المفحوصة\": <عدد>,
-    \"معاينة_العينات\": [\"<3 أمثلة حقيقية>\"],
-    \"مشاكل_مكتشفة\": [\"<مشاكل بالعربية>\"],
-    \"البيانات_تطابق_الوصف\": <true|false>
-  },
-  \"نقاط_القوة\": [\"<بالعربية>\"],
-  \"نقاط_الضعف\": [\"<بالعربية>\"],
-  \"الاستخدامات_الموصى_بها\": [\"<بالعربية>\"],
-  \"تفصيل_الجودة\": {
-    \"سهولة_الوصول\": <0-100>,
-    \"التوثيق\": <0-100>,
-    \"السلامة_الأخلاقية\": <0-100>,
-    \"الترخيص\": <0-100>,
-    \"قابلية_إعادة_الإنتاج\": <0-100>,
-    \"المراجعة_العلمية\": <0-100>,
-    \"جودة_البيانات\": <0-100>
-  },
-  \"المصادر_المفتوحة\": [\"<URLs>\"],
-  \"تم_تحميل_البيانات\": <true|false>
-}
-
-التقديرات: ٨٠-١٠٠=ممتاز، ٦٠-٧٩=جيد، ٤٠-٥٩=مقبول، ٠-٣٩=ضعيف
-اكتب كل النصوص بالعربية الفصحى."
-
-    # Brief pause to avoid API rate limits
-    sleep 2
-done
-
-echo "$(date): Complete — $CURRENT datasets processed" >> "$LOG_FILE"
-echo "Done. Results in $OUTPUT_DIR"
-```
-
-### Why the Script Skips Existing Files
-
-The `if [ -f "$OUTPUT_FILE" ]` check is critical. If the process crashes at dataset 247, you restart the script and it picks up at 248. No duplicate work, no lost progress.
-
----
-
-## Step 5: Run It
-
-From inside the sandbox:
-
-```bash
-chmod +x assess_datasets.sh
-./assess_datasets.sh
-```
-
-Or run it as a one-shot command from the host:
-
-```bash
-docker sandbox run my-sandbox -- -p "Run /path/to/assess_datasets.sh"
-```
-
-### Monitoring Progress
-
-From the host, check the progress log:
-
-```bash
-tail -f ~/sandbox-workspace/output/progress.log
-```
-
-Check how many assessments are complete:
-
-```bash
-ls ~/sandbox-workspace/output/*_assessment.json | wc -l
-```
-
-Open a second terminal into the sandbox to inspect results as they come in:
-
-```bash
-docker sandbox exec -it my-sandbox bash
-cat ~/sandbox-workspace/output/ajgt_assessment.json | python3 -m json.tool
-```
-
----
-
-## What the Sandbox Actually Prevents
-
-Here's a concrete comparison of what happens with and without the sandbox:
-
-| Scenario | Without Sandbox | With Docker Sandbox |
-|----------|----------------|-------------------|
-| Claude runs `rm -rf ~/Documents` | Your documents are deleted | Only sandbox files affected; host untouched |
-| Claude runs `pip install malicious-pkg` | Installed on your system | Installed only in the microVM |
-| Claude fetches `http://evil-exfil-site.com` | Request goes through | **Blocked** by network denylist policy |
-| Claude reads `~/.ssh/id_rsa` | Returns your private key | File doesn't exist in sandbox |
-| Claude runs `docker rm -f $(docker ps -q)` | Kills your running containers | Only affects sandbox's private daemon |
-| Claude writes to `/etc/hosts` | Modifies your system | Modifies only the microVM's hosts file |
-| Process crashes | Orphaned processes on your system | MicroVM contains everything; `docker sandbox rm` cleans up |
-
----
-
-## Sandbox Lifecycle
-
-### Persistence
-
-Sandboxes **persist** until you remove them. If you close your terminal or restart your machine:
-
-```bash
-# Reconnect to an existing sandbox
-docker sandbox run my-sandbox
-
-# List all sandboxes
-docker sandbox ls
-```
-
-Everything you installed (pip packages, downloaded files, configs) is still there.
-
-### Cleanup
-
-When you're done with all 580 assessments:
-
-```bash
-# Copy results out (they're already synced via workspace)
-ls ~/sandbox-workspace/output/
-
-# Remove the sandbox and all its packages/state
-docker sandbox rm my-sandbox
-```
-
----
-
-## Parallel Processing with Multiple Sandboxes
-
-For faster throughput, split the 580 datasets across multiple sandboxes:
-
-```bash
-# Split input files into 4 batches
-mkdir -p ~/batch-{1,2,3,4}/input ~/batch-{1,2,3,4}/output
-
-ls ~/sandbox-workspace/input/*.json | head -145 | xargs -I{} cp {} ~/batch-1/input/
-ls ~/sandbox-workspace/input/*.json | tail -n+146 | head -145 | xargs -I{} cp {} ~/batch-2/input/
-ls ~/sandbox-workspace/input/*.json | tail -n+291 | head -145 | xargs -I{} cp {} ~/batch-3/input/
-ls ~/sandbox-workspace/input/*.json | tail -n+436 | xargs -I{} cp {} ~/batch-4/input/
-
-# Launch 4 sandboxes in parallel
-docker sandbox run batch-1 ~/batch-1
-docker sandbox run batch-2 ~/batch-2
-docker sandbox run batch-3 ~/batch-3
-docker sandbox run batch-4 ~/batch-4
-```
-
-Each sandbox is a fully independent microVM. They don't share state, network, or filesystem.
+Sandboxes persist until removed — installed packages, downloaded files, and configs survive restarts.
+
+### Docker Sandboxes vs Custom Containers
+
+| Aspect | Docker Sandboxes | Custom Container |
+|--------|-----------------|-----------------|
+| **Isolation** | MicroVM (own kernel) | Container (shared kernel) |
+| **Setup** | One command | Build Dockerfile |
+| **Network policies** | Built-in CLI | Manual proxy/iptables |
+| **Auth** | Auto-inherits from host | Mount credentials file |
+| **Requires** | Docker Desktop 4.58+ | Any Docker version |
+| **Claude Code** | Pre-installed | Installed in image |
+| **Persistence** | Survives restarts | Destroyed on exit (`--rm`) |
 
 ---
 
 ## Tips and Gotchas
 
-### 1. Always Set API Key Globally
+### 1. Max Plan Auth Requires Credential File Mount
 
-If you pass `ANTHROPIC_API_KEY` inline (`ANTHROPIC_API_KEY=sk-xxx docker sandbox run ...`), the Docker daemon might not see it. Always use `~/.zshrc` and restart Docker Desktop.
-
-### 2. Workspace Sync is Bidirectional
-
-Files Claude writes to the workspace directory appear on your host immediately. This is how you get results out — no `docker cp` needed.
-
-### 3. Sandboxes Don't Show in `docker ps`
-
-They're microVMs, not containers. Use:
-```bash
-docker sandbox ls     # list sandboxes
-docker sandbox rm X   # remove sandbox
-```
-
-### 4. Network Policy Changes Take Effect Immediately
-
-You can tighten or loosen network rules while the sandbox is running. No restart needed.
-
-### 5. Certificate Pinning
-
-Some services use certificate pinning. If a fetch fails inside the sandbox, the proxy's HTTPS interception might be the cause. Use bypass mode:
+The `CLAUDE_CODE_OAUTH_TOKEN` environment variable alone is not sufficient. You must mount the full credentials JSON file extracted from the macOS Keychain:
 
 ```bash
-docker sandbox network proxy my-sandbox \
-  --bypass-host api.pinned-service.com
+security find-generic-password -s "Claude Code-credentials" -w > /tmp/creds.json
+# Mount as: -v /tmp/creds.json:/home/assessor/.claude/.credentials.json:ro
 ```
 
-### 6. Rate Limits
+If you have an API key instead, use the environment variable:
+```bash
+-e ANTHROPIC_API_KEY="sk-ant-api03-..."
+```
 
-When processing 580 datasets sequentially, Claude makes ~5,000 API calls. Add a `sleep 2` between datasets to stay within rate limits. For parallel sandboxes, increase the delay or check your API tier limits.
+### 2. `ANTHROPIC_API_KEY` Overrides Your Subscription
+
+If `ANTHROPIC_API_KEY` is set in your environment, Claude Code uses pay-as-you-go API billing instead of your Max plan. Make sure it's unset:
+
+```bash
+echo $ANTHROPIC_API_KEY  # Should be empty
+```
+
+### 3. tmpfs Mounts Are Essential for Read-Only Mode
+
+With `--read-only`, the container's root filesystem is immutable. But Claude Code and Python need writable directories for caches, configs, and temp files. The `--tmpfs` flags provide in-memory writable space that disappears when the container exits:
+
+```bash
+--tmpfs /tmp
+--tmpfs /home/assessor/.cache
+--tmpfs /home/assessor/.config
+--tmpfs /home/assessor/.local
+--tmpfs /home/assessor/.npm
+```
+
+### 4. Each Container Is Fully Independent
+
+Unlike Docker Sandboxes which persist, containers with `--rm` are destroyed after each run. This is actually a feature for batch processing — each dataset assessment starts clean with no leftover state from previous runs.
+
+### 5. Rate Limits on Max Plan
+
+When processing 580 datasets sequentially, Claude makes ~5,000+ API calls. The `sleep 2` between datasets prevents hitting rate limits. For Max plan users, the rate limit tier is generous, but continuous heavy usage may still trigger throttling.
+
+### 6. Verify Claude Actually Loaded Data
+
+The assessment JSON includes `"تم_تحميل_البيانات": true/false` to indicate whether real data was loaded. Cross-check by looking at `"عدد_العينات_المفحوصة"` — if it matches the actual dataset size, Claude loaded the data. If it says `0` or `metadata_only`, the HuggingFace link was broken or the library couldn't load it.
 
 ---
 
 ## The Result
 
-After running this setup on our 580 Modern Standard Arabic datasets, each assessment file looks like this:
+From my validated test run inside a Docker container, here's what Claude produced for the AJGT Arabic sentiment dataset:
 
 ```json
 {
-  "الاسم": "تغريدات أردنية عامة للتحليل العاطفي",
-  "الاسم_الأصلي": "Arabic Jordanian General Tweets (AJGT)",
-  "درجة_الجودة": 65,
+  "الاسم": "مجموعة تغريدات عربية أردنية لتحليل المشاعر",
+  "الاسم_الأصلي": "AJGT - Arabic Jordanian General Tweets",
+  "درجة_الجودة": 62,
   "تقدير_الجودة": "جيد",
-  "الملخص": "مجموعة بيانات تتضمن 1,800 تغريدة عربية...",
+  "الملخص": "مجموعة بيانات عربية تتكون من 1,800 تغريدة من تويتر مصنفة إلى إيجابية وسلبية بالتساوي...",
   "فحص_البيانات": {
     "الطريقة_المستخدمة": "datasets_lib",
     "عدد_العينات_المفحوصة": 1800,
-    "معاينة_العينات": ["اربد فيها جامعات اكثر من عمان..."],
-    "مشاكل_مكتشفة": ["حجم صغير جداً", "لا يوجد تقسيم اختبار"],
-    "البيانات_تطابق_الوصف": true
+    "معاينة_العينات": [
+      "اربد فيها جامعات اكثر من عمان ... [إيجابي]",
+      "لسانك قذر يا قمامه [سلبي]",
+      "اتحزن فان الله يدافع عنك والملائكه تستغفر لك [إيجابي]"
+    ],
+    "مشاكل_مكتشفة": [
+      "الترخيص غير محدد مما يخلق غموضاً قانونياً لإعادة الاستخدام",
+      "حجم البيانات صغير جداً (1,800 عينة فقط)",
+      "لا يوجد تقسيم للبيانات إلى تدريب واختبار وتحقق",
+      "بعض العينات تحتوي على محتوى حساس بدون تحذيرات"
+    ]
   },
   "تفصيل_الجودة": {
-    "سهولة_الوصول": 90,
-    "التوثيق": 45,
+    "سهولة_الوصول": 85,
+    "التوثيق": 55,
     "السلامة_الأخلاقية": 50,
     "الترخيص": 20,
-    "قابلية_إعادة_الإنتاج": 50,
-    "المراجعة_العلمية": 70,
-    "جودة_البيانات": 70
+    "قابلية_إعادة_الإنتاج": 55,
+    "المراجعة_العلمية": 75,
+    "جودة_البيانات": 65
   },
   "تم_تحميل_البيانات": true
 }
 ```
 
-Claude actually loaded all 1,800 samples via the Python `datasets` library, verified zero duplicates, checked label distribution, and found specific quality issues — all from inside a sandbox where the worst it could do is clutter its own temporary filesystem.
+Claude loaded all 1,800 samples via the Python `datasets` library, computed statistics, identified quality issues with specific examples, and wrote the assessment — all from inside an isolated container where it couldn't access my home directory, SSH keys, or any other system resources.
 
 ---
 
@@ -475,3 +476,4 @@ Claude actually loaded all 1,800 samples via the Python `datasets` library, veri
 - [Network Policies Reference](https://docs.docker.com/ai/sandboxes/network-policies/)
 - [Claude Code Sandboxing Docs](https://code.claude.com/docs/en/sandboxing)
 - [Docker Sandboxes Blog Post](https://www.docker.com/blog/docker-sandboxes-run-claude-code-and-other-coding-agents-unsupervised-but-safely/)
+- [Claude Code Authentication](https://support.claude.com/en/articles/11145838-using-claude-code-with-your-pro-or-max-plan)
