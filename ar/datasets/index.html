@@ -1,0 +1,74 @@
+---
+layout: default
+title: "دليل البيانات العربية"
+lang: ar
+---
+
+<main class="datasets-page">
+    <header>
+        <h1>دليل البيانات العربية</h1>
+        <p>استعرض وقيّم مجموعات البيانات العربية لمعالجة اللغات الطبيعية</p>
+    </header>
+
+    <section class="datasets-toolbar">
+        <div class="datasets-search">
+            <input type="text" id="datasets-search"
+                   placeholder="ابحث بالاسم أو المهمة أو الملخص..."
+                   autocomplete="off">
+        </div>
+        <div class="datasets-filters">
+            <select id="filter-task">
+                <option value="">كل المهام</option>
+            </select>
+            <select id="filter-grade">
+                <option value="">كل التقديرات</option>
+                <option value="ممتاز">ممتاز</option>
+                <option value="جيد">جيد</option>
+                <option value="مقبول">مقبول</option>
+                <option value="ضعيف">ضعيف</option>
+            </select>
+            <select id="filter-form">
+                <option value="">كل الأنواع</option>
+                <option value="text">نصوص</option>
+                <option value="audio">صوتيات</option>
+                <option value="images">صور</option>
+                <option value="videos">فيديو</option>
+            </select>
+            <select id="filter-year">
+                <option value="">كل السنوات</option>
+            </select>
+            <select id="sort-by">
+                <option value="quality-desc">الجودة (الأعلى)</option>
+                <option value="quality-asc">الجودة (الأقل)</option>
+                <option value="year-desc">السنة (الأحدث)</option>
+                <option value="year-asc">السنة (الأقدم)</option>
+                <option value="name-asc">الاسم (أ-ي)</option>
+            </select>
+        </div>
+    </section>
+
+    <div class="datasets-results-count" id="results-count"></div>
+
+    <section class="datasets-grid" id="datasets-grid"></section>
+
+    <div class="datasets-load-more" id="load-more-container" style="display:none;">
+        <button id="load-more-btn">تحميل المزيد</button>
+    </div>
+
+    <div class="datasets-loading" id="datasets-loading">
+        <p>جارٍ تحميل البيانات...</p>
+    </div>
+
+    <div class="datasets-empty" id="datasets-empty" style="display:none;">
+        <p>لم يتم العثور على نتائج تطابق بحثك.</p>
+    </div>
+</main>
+
+<div class="dataset-modal-overlay" id="modal-overlay" style="display:none;">
+    <div class="dataset-modal" id="dataset-modal" role="dialog" aria-modal="true">
+        <button class="modal-close" id="modal-close" aria-label="إغلاق">&times;</button>
+        <div class="modal-content" id="modal-content"></div>
+    </div>
+</div>
+
+<script src="/assets/js/datasets.js" defer></script>
