@@ -1414,6 +1414,14 @@ body.dark-mode .post-content img {
    Mobile Responsive Styles
    ========================================================================== */
 @media (max-width: 768px) {
+    header {
+        backdrop-filter: none;
+    }
+
+    body.dark-mode header {
+        backdrop-filter: none;
+    }
+
     nav {
         width: 100%;
         min-height: 3rem;
