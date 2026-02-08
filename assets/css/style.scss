@@ -97,7 +97,7 @@ a:hover {
 /* ==========================================================================
    Header & Navigation - Minimal Style
    ========================================================================== */
-header {
+body > header {
     background-color: var(--header-bg);
     padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--border-color-light);
@@ -108,7 +108,7 @@ header {
     background-color: rgba(255, 255, 255, 0.9);
 }
 
-body.dark-mode header {
+body.dark-mode > header {
     background-color: rgba(31, 41, 55, 0.9);
 }
 
@@ -1414,11 +1414,11 @@ body.dark-mode .post-content img {
    Mobile Responsive Styles
    ========================================================================== */
 @media (max-width: 768px) {
-    header {
+    body > header {
         backdrop-filter: none;
     }
 
-    body.dark-mode header {
+    body.dark-mode > header {
         backdrop-filter: none;
     }
 
