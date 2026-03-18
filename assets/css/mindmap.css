@@ -109,7 +109,7 @@ body.dark-mode .mindmap-card-badge {
 /* ── Mindmap Page ── */
 .mindmap-page {
     width: 100vw;
-    margin-left: calc(-50vw + 50%);
+    margin-inline: calc(-50vw + 50%);
     margin-top: -2rem;
     margin-bottom: -3rem;
 }
@@ -398,4 +398,18 @@ body.dark-mode .mindmap-info-close:hover {
     .mindmap-cards {
         grid-template-columns: 1fr;
     }
+    .mm-node circle {
+        stroke-width: 8px;
+        stroke-opacity: 0;
+        paint-order: stroke;
+    }
+}
+
+/* ── Mobile Landscape ── */
+@media (max-width: 768px) and (orientation: landscape) {
+    .mindmap-toolbar { top: 4px; padding: 3px 6px; }
+    .mindmap-toolbar button { font-size: 10px; padding: 3px 6px; }
+    .mindmap-hint { top: 36px; font-size: 9px; }
+    .mindmap-legend { bottom: 4px; left: 4px; font-size: 10px; padding: 6px 10px; }
+    .mindmap-info { max-height: 40vh; }
 }

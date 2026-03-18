@@ -263,11 +263,20 @@
     ]
   };
 
-  // ─── CONSTANTS ───
-  var NODE_H = 36;
-  var NODE_GAP = 8;
-  var LEVEL_W = 280;
-  var CIRCLE_R = [10, 7, 5]; // root, depth1, depth2+
+  // ─── RESPONSIVE CONSTANTS ───
+  var DESKTOP_CONF = { NODE_H: 36, NODE_GAP: 8, LEVEL_W: 280, CIRCLE_R: [10, 7, 5], FONT: [15, 13], TEXT_GAP: [16, 12] };
+  var MOBILE_CONF  = { NODE_H: 32, NODE_GAP: 6, LEVEL_W: 160, CIRCLE_R: [8, 5, 4],  FONT: [14, 12], TEXT_GAP: [12, 8]  };
+
+  function isMobile() { return window.innerWidth <= 768; }
+  function getConf() { return isMobile() ? MOBILE_CONF : DESKTOP_CONF; }
+
+  var NODE_H, NODE_GAP, LEVEL_W, CIRCLE_R;
+  function applyConf() {
+    var c = getConf();
+    NODE_H = c.NODE_H; NODE_GAP = c.NODE_GAP;
+    LEVEL_W = c.LEVEL_W; CIRCLE_R = c.CIRCLE_R;
+  }
+  applyConf();
 
   // ─── LEGEND ENTRIES ───
   var LEGEND = [
@@ -392,9 +401,11 @@
   // Returns {left, right} — pixel extent from circle center
   function getTextExtent(node) {
     var r = getCircleRadius(node);
-    var textW = getTextWidth(node.n, node.depth === 0 ? 15 : 13);
-    var gap = node.depth === 0 ? 16 : 12;
-    return { left: r + gap + textW, right: r }; // text always LEFT of circle
+    var conf = getConf();
+    var fontSize = node.depth === 0 ? conf.FONT[0] : conf.FONT[1];
+    var textW = getTextWidth(node.n, fontSize);
+    var gap = node.depth === 0 ? conf.TEXT_GAP[0] : conf.TEXT_GAP[1];
+    return { left: r + gap + textW, right: r };
   }
 
   // ─── STATE ───
@@ -532,7 +543,8 @@
       g.appendChild(circle);
 
       // Text always LEFT of circle
-      var gap = isRoot ? 16 : 12;
+      var conf = getConf();
+      var gap = isRoot ? conf.TEXT_GAP[0] : conf.TEXT_GAP[1];
       var textX = cx - r - gap;
 
       var label = svgCreate("text", {
@@ -541,7 +553,7 @@
         "dominant-baseline": "central",
         "text-anchor": "start",
         direction: "rtl",
-        "font-size": isRoot ? 15 : 13,
+        "font-size": isRoot ? conf.FONT[0] : conf.FONT[1],
         "font-weight": node.depth <= 1 ? 700 : 500,
         fill: isRoot ? tc.rootText : (isSel ? tc.selectedText : tc.nodeText),
         style: "font-family:'Noto Naskh Arabic',var(--font-arabic),sans-serif"
@@ -557,7 +569,7 @@
           "dominant-baseline": "central",
           "text-anchor": "start",
           direction: "rtl",
-          "font-size": 9,
+          "font-size": isMobile() ? 8 : 9,
           fill: nodeColor,
           "fill-opacity": 0.7,
           style: "font-family:'Noto Naskh Arabic',var(--font-arabic),sans-serif"
@@ -613,6 +625,9 @@
   // ─── FIT VIEW ───
   function fitView() {
     if (!svgEl) return;
+    applyConf();
+    clearTextWidthCache();
+
     var rect = svgEl.getBoundingClientRect();
     var W = rect.width || 800;
     var H = rect.height || 600;
@@ -634,7 +649,8 @@
 
     var bw = maxX - minX || 1;
     var bh = maxY - minY || 1;
-    var scale = Math.min(W / bw, H / bh) * 0.88;
+    var fitMultiplier = isMobile() ? 0.92 : 0.88;
+    var scale = Math.min(W / bw, H / bh) * fitMultiplier;
     var cx = (minX + maxX) / 2;
     var cy = (minY + maxY) / 2;
 
@@ -778,10 +794,13 @@
     }
     wrapperEl.appendChild(toolbar);
 
-    // Hint with auto-fade
+    // Hint with auto-fade (touch-aware)
     var hint = document.createElement("div");
     hint.className = "mindmap-hint";
-    hint.textContent = "\u0627\u0633\u062D\u0628 \u0644\u0644\u062A\u062D\u0631\u064A\u0643 \u00B7 \u0639\u062C\u0644\u0629 \u0627\u0644\u0641\u0623\u0631\u0629 \u0644\u0644\u062A\u0643\u0628\u064A\u0631 \u00B7 \u0627\u0636\u063A\u0637 \u0639\u0644\u0649 \u0639\u0642\u062F\u0629 \u0644\u0644\u062A\u0641\u0627\u0635\u064A\u0644";
+    var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    hint.textContent = isTouchDevice
+      ? "\u0627\u0633\u062D\u0628 \u0644\u0644\u062A\u062D\u0631\u064A\u0643 \u00B7 \u0627\u0641\u0631\u062F \u0625\u0635\u0628\u0639\u064A\u0646 \u0644\u0644\u062A\u0643\u0628\u064A\u0631 \u00B7 \u0627\u0636\u063A\u0637 \u0639\u0644\u0649 \u0639\u0642\u062F\u0629 \u0644\u0644\u062A\u0641\u0627\u0635\u064A\u0644"
+      : "\u0627\u0633\u062D\u0628 \u0644\u0644\u062A\u062D\u0631\u064A\u0643 \u00B7 \u0639\u062C\u0644\u0629 \u0627\u0644\u0641\u0623\u0631\u0629 \u0644\u0644\u062A\u0643\u0628\u064A\u0631 \u00B7 \u0627\u0636\u063A\u0637 \u0639\u0644\u0649 \u0639\u0642\u062F\u0629 \u0644\u0644\u062A\u0641\u0627\u0635\u064A\u0644";
     wrapperEl.appendChild(hint);
     setTimeout(function () { hint.classList.add("fade-out"); }, 3000);
 
@@ -890,6 +909,18 @@
       }
     });
     observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    // Re-layout on resize / orientation change (debounced)
+    var resizeTimer;
+    window.addEventListener("resize", function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        applyConf();
+        clearTextWidthCache();
+        render();
+        fitView();
+      }, 200);
+    });
   }
 
   document.addEventListener("DOMContentLoaded", initMindmap);
