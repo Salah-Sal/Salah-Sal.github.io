@@ -1,6 +1,9 @@
 source "https://rubygems.org"
 
 gem "jekyll", "~> 4.2" # Or a version consistent with the minima theme
+gem "logger"
+gem "csv"
+gem "base64"
 
 gem "jekyll-feed", "~> 0.15" # For RSS feed
 gem "jekyll-seo-tag", "~> 2.8"
