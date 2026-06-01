@@ -54,6 +54,8 @@ outs:
 
 When a collaborator clones the repo and runs `dvc pull`, DVC reads these pointer files and downloads the matching data from Google Drive. It's content-addressable — if the file hasn't changed, nothing gets re-uploaded or re-downloaded.
 
+One thing to internalize: DVC versions **whole-file snapshots**, not diffs. Deduplication is across *identical* files, so a database that changes a little on every run stores a **full new copy** each time you `dvc add` it. That's fine on Drive (cheap, and old versions are reachable via `git checkout` of the pointer), but don't expect git-style line-level history of the data — for that, export the rows to a text format and track *that*.
+
 ---
 
 ## Full Setup Guide
@@ -66,19 +68,22 @@ When a collaborator clones the repo and runs `dvc pull`, DVC reads these pointer
 
 ### Step 1: Install DVC
 
-On macOS:
+DVC is a command-line tool, so install it **isolated** rather than into a project or system Python. The cleanest way is [`uv`](https://docs.astral.sh/uv/) or `pipx`:
 
 ```bash
-brew install dvc
+uv tool install "dvc[gdrive]"      # recommended
+# or: pipx install "dvc[gdrive]"
 ```
 
-On Linux:
+On macOS you can also use Homebrew:
 
 ```bash
-pip install "dvc[gdrive]"
+brew install dvc                   # gdrive backend included
 ```
 
-The `[gdrive]` extra installs the Google Drive backend. If you use `brew`, it's included by default.
+The `[gdrive]` extra installs the Google Drive backend.
+
+> **Avoid a bare `pip install`.** On modern distros (Fedora, recent Debian/Ubuntu) a system-wide `pip install` fails with an *externally-managed-environment* error (PEP 668), and installing into your project's venv pins DVC as a project dependency it doesn't need. `uv tool`/`pipx` sidestep both by giving DVC its own isolated environment on your `PATH`.
 
 ### Step 2: Initialize DVC in Your Repo
 
@@ -94,13 +99,15 @@ This creates:
 
 ### Step 3: Create a Google Drive Folder
 
-Go to Google Drive and create a folder for your DVC data. Copy the **folder ID** from the URL:
+Go to Google Drive and create a folder for your DVC data. DVC identifies the folder by its **ID**, not its name or path — and the ID only appears in the URL when you **open the folder** in a browser:
 
 ```
-https://drive.google.com/drive/folders/1aBcDeFgHiJkLmNoPqRsTuVwXyZ012345
-                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                        This is the folder ID
+https://drive.google.com/drive/folders/YOUR_FOLDER_ID
+                                        ^^^^^^^^^^^^^^
+                                        a ~33-char string of letters/digits/-/_
 ```
+
+The remote URL is `gdrive://YOUR_FOLDER_ID` — the folder name (e.g. `dvc-storage`) is *not* usable in its place. The ID is not a secret (it grants no access on its own), so it's safe to commit and share.
 
 ### Step 4: Configure the Remote
 
@@ -114,7 +121,7 @@ The `-d` flag sets it as the default remote. Your `.dvc/config` now contains:
 [core]
     remote = gdrive
 ['remote "gdrive"']
-    url = gdrive://1aBcDeFgHiJkLmNoPqRsTuVwXyZ012345
+    url = gdrive://YOUR_FOLDER_ID
 ```
 
 This file is safe to commit — the folder ID alone doesn't grant access.
@@ -167,6 +174,8 @@ Without this step, you'll see: *"DVC has not completed the Google verification p
 
 After clicking Create, Google shows a confirmation screen with your **Client ID** and a **Download JSON** button. The **Client Secret** is only available inside the downloaded JSON file — it's not displayed on screen. Handle these securely:
 
+> ⚠️ **This is your one and only chance to capture the Client Secret.** Google no longer lets you view or re-download it later — once you close this dialog, the Console shows only the **last 4 characters** of the secret, with no "reveal" option. Download the JSON *now* and back it up. If you lose it, you can't recover it (see ["Recovering a lost secret"](#recovering-a-lost-secret) below — you rotate to a new one).
+
 1. **Copy the Client ID** from the confirmation screen
 2. **Download the JSON file** — this is the only way to get your Client Secret. Click the download button immediately.
 3. **Save the JSON file outside your git repo** and restrict permissions:
@@ -183,7 +192,7 @@ chmod 600 ~/.config/dvc/oauth-credentials.json
 cat ~/.config/dvc/oauth-credentials.json | python3 -c "import sys,json; print(json.load(sys.stdin)['installed']['client_secret'])"
 ```
 
-Do not commit this JSON file to git. Keep it as a backup — if you ever need to reconfigure DVC on another machine, you can pull both the Client ID and Client Secret from it instead of creating new credentials.
+Do not commit this JSON file to git. **Back it up somewhere durable** (a password manager is ideal) — it's the *only* copy of your Client Secret, and you'll reuse it to set up DVC on every other machine. Because the Console won't show the secret again, losing this file means rotating to a new secret rather than recovering the old one.
 
 #### 5f. Configure DVC with Your Credentials
 
@@ -199,6 +208,17 @@ The `--local` flag is critical — it writes to `.dvc/config.local` which is **g
 | `.dvc/config` | Yes | Remote URL (folder ID) |
 | `.dvc/config.local` | No (gitignored) | OAuth client ID and secret |
 
+#### Recovering a lost secret
+
+If you no longer have the JSON — say it was only on a machine you can't reach — **you can't view the old secret again** (the Console shows just its last 4 characters). Don't hunt for it; rotate instead:
+
+1. Open **APIs & Services → Credentials** and click your OAuth client's **name** (not the row icons — the row only offers *edit* and *delete*).
+2. On the detail page, click **"Add Secret"**. A client can hold up to **two** secrets at once, so this doesn't disturb anything still using the old one.
+3. The new secret is shown **once** — copy it immediately, then feed it to DVC with `dvc remote modify --local … gdrive_client_secret` (Step 5f).
+4. Later, **disable/delete** the old secret you couldn't recover.
+
+The **Client ID stays the same** through rotation, so nothing else changes. (Creating a brand-new Desktop client also works, but rotating is less setup.)
+
 ### Step 6: Add Files to DVC
 
 ```bash
@@ -207,6 +227,10 @@ dvc add data/my_database.db data/my_database.db.bak \
         experiments/splits/train.json \
         experiments/splits/test.json
 ```
+
+> **Tracking a live SQLite database?** Two things to watch:
+> - **Checkpoint the WAL first.** A database in WAL mode keeps uncommitted pages in a `-wal` sidecar, so `dvc add` can capture an incomplete snapshot. Close all connections, or run `sqlite3 my_database.db 'PRAGMA wal_checkpoint(TRUNCATE);'` before adding.
+> - **Never track the sidecars.** `-wal` and `-shm` are transient — `echo -e '*.db-wal\n*.db-shm' >> .gitignore` and DVC-track only the `.db` itself.
 
 For each file, DVC:
 1. Computes the MD5 hash
@@ -292,9 +316,8 @@ Whether you're cloning on a second machine or a collaborator is joining the proj
 ### Step 1: Clone and Install
 
 ```bash
-# Install DVC
-brew install dvc  # macOS
-# or: pip install "dvc[gdrive]"  # Linux/Windows
+# Install DVC (isolated — see Step 1)
+uv tool install "dvc[gdrive]"     # or: pipx install … / brew install dvc
 
 # Clone the repo
 git clone git@github.com:your/repo.git
@@ -343,14 +366,15 @@ dvc status
 dvc add data/my_database.db
 git add data/my_database.db.dvc
 git commit -m "Update database with new entries"
-dvc push
+dvc push          # push the DATA first...
+git push          # ...then the pointer that references it
 
 # Pull latest data on another machine
 git pull
 dvc pull
 ```
 
-The key mental model: **`git` tracks code + `.dvc` pointers, `dvc` tracks the actual data**. Always commit the `.dvc` files after running `dvc add`, and always `dvc push` after `git push`.
+The key mental model: **`git` tracks code + `.dvc` pointers, `dvc` tracks the actual data**. Commit the `.dvc` files after running `dvc add`, and **`dvc push` before `git push`** — if the pointer reaches the remote before its data does, a collaborator who runs `git pull && dvc pull` in that window gets a "missing data" error.
 
 ---
 
@@ -389,11 +413,13 @@ cd correct-repo/
 dvc init
 ```
 
-### 5. Gitignored Directories Block DVC Pointer Files
+### 5. Whole-Directory Gitignores Block DVC Pointer Files
 
-If a directory is gitignored (e.g., `extraction/db/`), DVC can't create its `.dvc` pointer file there because git would ignore it. Either:
-- Change the gitignore from `extraction/db/` (whole dir) to `extraction/db/*.db` (specific files)
-- Or don't DVC-track files in gitignored directories
+A **file-glob** ignore is fine: with `*.db` in your `.gitignore`, the data file stays ignored while the `*.db.dvc` pointer (a different name) is *not* matched, so git happily tracks it. DVC even reuses your existing rule instead of adding a duplicate.
+
+The problem is a **whole-directory** ignore (e.g. `extraction/db/`): that swallows the `.dvc` pointer too, so git never tracks it and `dvc pull` has nothing to read. Either:
+- Narrow the rule from `extraction/db/` (whole dir) to `extraction/db/*.db` (data files only), or
+- Don't DVC-track files inside a fully-ignored directory.
 
 ### 6. Publishing Your OAuth App Is Optional
 
@@ -402,6 +428,21 @@ For personal or small-team use, leaving the app in "Testing" mode is fine. You c
 ### 7. Google Drive Folder Structure
 
 DVC stores files in Google Drive using their content hash as the filename. Don't be alarmed when you see files like `a1b2c3d4e5f6...` in your Drive folder instead of `arabic_dict.db`. This is by design — it enables content-addressable deduplication.
+
+### 8. The Auth Token Is Cached Per-Machine
+
+The OAuth *client* (id + secret) is reused everywhere, but the **token** from the browser consent is cached locally, under `~/.cache/pydrive2fs/<client_id>/`. That's why every new machine prompts a browser sign-in once even with the same credentials. If auth gets into a weird state (revoked access, "token expired", a stale consent), delete that directory and the next `dvc push`/`pull` re-authenticates cleanly. The harmless `Cannot access .../default.json: No such file or directory` warning on a first push just means that cache doesn't exist yet.
+
+### 9. For CI / Headless: Use a Service Account
+
+The whole user-OAuth flow needs a browser, which you don't have in CI or on a headless server. For automation, create a **Google Cloud service account**, download its JSON key, share the Drive folder with the service account's email, and point DVC at it:
+
+```bash
+dvc remote modify --local gdrive gdrive_use_service_account true
+dvc remote modify --local gdrive gdrive_service_account_json_file_path path/to/sa-key.json
+```
+
+No browser, no per-machine consent — ideal for pipelines. (Treat the key file like any other secret: keep it out of git.)
 
 ---
 
